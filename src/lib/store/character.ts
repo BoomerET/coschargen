@@ -47,6 +47,11 @@ export type CulturalExpertise =
   | "Kharbranthian" | "Listener" | "Military Life" | "Natan" | "Reshi"
   | "Shin" | "Thaylen" | "Underworld" | "Unkalaki" | "Veden" | "Wayfarer";
 
+export const CULTURAL_SET = new Set<AnyExpertise>([
+  "Alethi","Azish","Herdazian","High Society","Iriali","Kharbranthian","Listener",
+  "Military Life","Natan","Reshi","Shin","Thaylen","Underworld","Unkalaki","Veden","Wayfarer",
+]);
+
 export type UtilityExpertise =
   | "Animal Care" | "Armor Crafting" | "Culinary Arts" | "Engineering"
   | "Equipment" | "History" | "Literature" | "Military" | "Religion"
@@ -167,53 +172,56 @@ export const useCharacterStore = create<CharacterState>()(
       resetStats: () => set({ stats: { ...ZERO_STATS }, generalExpertises: [] }),
 
       // Expertise toggles
-      toggleCultural: (e) =>
+      // Replace toggleCultural with this:
+toggleCultural: (e) =>
   set((state) => {
-    const inCultural = state.culturalExpertises.includes(e);
-    const intCap = state.stats.INT ?? 0;
-    const totalAllowed = 2 + intCap; // 2 required + INT more
-    const totalSelected =
-      state.culturalExpertises.length + state.generalExpertises.length;
-
-    if (inCultural) {
-      // Allow deselect, but keep at least 2 Cultural
-      if (state.culturalExpertises.length <= 2) return {};
-      return {
-        culturalExpertises: state.culturalExpertises.filter((x) => x !== e),
-      };
-    } else {
-      // Selecting a new Cultural:
-      // - Respect overall cap (2 + INT)
-      // - Remove from general if present (no dupes)
-      if (totalSelected >= totalAllowed) return {};
-      const generalWithoutDup = state.generalExpertises.filter((x) => x !== e);
-      return {
-        culturalExpertises: [...state.culturalExpertises, e],
-        generalExpertises: generalWithoutDup,
-      };
-    }
-  }),
-
-toggleGeneral: (e) =>
-  set((state) => {
-    const inCultural = state.culturalExpertises.includes(e);
-    const inGeneral = state.generalExpertises.includes(e);
+    const inCultural = state.culturalExpertises.includes(e as any);
     const intCap = state.stats.INT ?? 0;
     const totalAllowed = 2 + intCap;
     const totalSelected =
       state.culturalExpertises.length + state.generalExpertises.length;
 
-    if (inGeneral) {
-      // deselect
+    if (inCultural) {
+      // ✅ Allow deselect even if it drops below 2 (lets you change your mind)
       return {
-        generalExpertises: state.generalExpertises.filter((x) => x !== e),
+        culturalExpertises: state.culturalExpertises.filter((x) => x !== (e as any)),
+      };
+    } else {
+      // Adding a Cultural pick respects the overall cap 2 + INT
+      if (totalSelected >= totalAllowed) return {};
+      // No duplicates across sets
+      const generalWithoutDup = state.generalExpertises.filter((x) => x !== (e as any));
+      return {
+        culturalExpertises: [...state.culturalExpertises, e as any],
+        generalExpertises: generalWithoutDup,
       };
     }
-    // Don’t allow duplicates with Cultural
+  }),
+
+// Replace toggleGeneral with this:
+toggleGeneral: (e) =>
+  set((state) => {
+    const inCultural = state.culturalExpertises.includes(e as any);
+    const inGeneral = state.generalExpertises.includes(e as any);
+    const intCap = state.stats.INT ?? 0;
+
+    if (inGeneral) {
+      // deselect any time
+      return {
+        generalExpertises: state.generalExpertises.filter((x) => x !== (e as any)),
+      };
+    }
+
+    // ✅ HARD GATE: must pick 2 Cultural before ANY Additional
+    if (state.culturalExpertises.length < 2) return {};
+
+    // No duplicates with Cultural
     if (inCultural) return {};
-    // Respect overall cap
-    if (totalSelected >= totalAllowed) return {};
-    return { generalExpertises: [...state.generalExpertises, e] };
+
+    // Cap general picks to INT
+    if (state.generalExpertises.length >= intCap) return {};
+
+    return { generalExpertises: [...state.generalExpertises, e as any] };
   }),
 
 

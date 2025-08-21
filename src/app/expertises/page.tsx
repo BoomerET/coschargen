@@ -72,25 +72,19 @@ export default function ExpertisesPage() {
   
   const totalAllowed = 2 + intCap;
   const totalSelected = culturalExpertises.length + generalExpertises.length;
+  const needTwoCulturalFirst = culturalExpertises.length < 2;
 
   return (
     <div className="mx-auto max-w-4xl">
-      <h1 className="mb-2 text-2xl font-bold">Expertises</h1>
-      <p className="mb-6 text-sm text-gray-600">
-        Select <strong>two</strong> Cultural expertises. Then select <strong>{intCap}</strong> additional expertises (any category).
-      </p>
-
-      {/* Status pill */}
-      <div className="mb-4 inline-flex items-center rounded-full border bg-gray-50 px-3 py-1 text-sm">
-        <span className="mr-3">Progress</span>
-        <span className="rounded-md border bg-white px-2 py-0.5 text-xs">
-          Cultural {culturalCount}/2
-        </span>
-        <span className="ml-2 rounded-md border bg-white px-2 py-0.5 text-xs">
-          Additional {generalCount}/{intCap}
-        </span>
-      </div>
-
+      <h1 className="mb-2 text-2xl font-bold">Expertise</h1>
+<span>        <button
+          type="button"
+          onClick={clearExpertises}
+          className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50"
+        >
+          Clear selections
+        </button>
+</span><div><br /></div>
       {/* Cultural (exactly 2) */}
       <section className="mb-8">
         <h2 className="mb-2 text-lg font-semibold">Cultural (choose 2)</h2>
@@ -136,7 +130,10 @@ export default function ExpertisesPage() {
   items={ARMOR}
   isChecked={isGeneralChecked}
   isDisabled={(item) =>
-    (!isGeneralChecked(item) && totalSelected >= totalAllowed) ||
+    // Block adding new ones until 2 Cultural are chosen,
+    // or when overall cap is reached; also prevent dupes with Cultural.
+    (!isGeneralChecked(item) &&
+      (needTwoCulturalFirst || totalSelected >= totalAllowed)) ||
     culturalExpertises.includes(item as any)
   }
   onToggle={(e) => toggleGeneral(e)}
@@ -148,19 +145,8 @@ export default function ExpertisesPage() {
   items={UTILITY}
   isChecked={isGeneralChecked}
   isDisabled={(item) =>
-    (!isGeneralChecked(item) && totalSelected >= totalAllowed) ||
-    culturalExpertises.includes(item as any)
-  }
-  onToggle={(e) => toggleGeneral(e)}
-/>
-
-{/* Cultural (extra picks allowed here too) */}
-<Category
-  title="Cultural"
-  items={CULTURAL}
-  isChecked={isGeneralChecked}
-  isDisabled={(item) =>
-    (!isGeneralChecked(item) && totalSelected >= totalAllowed) ||
+    (!isGeneralChecked(item) &&
+      (needTwoCulturalFirst || totalSelected >= totalAllowed)) ||
     culturalExpertises.includes(item as any)
   }
   onToggle={(e) => toggleGeneral(e)}
@@ -172,7 +158,8 @@ export default function ExpertisesPage() {
   items={WEAPONS}
   isChecked={isGeneralChecked}
   isDisabled={(item) =>
-    (!isGeneralChecked(item) && totalSelected >= totalAllowed) ||
+    (!isGeneralChecked(item) &&
+      (needTwoCulturalFirst || totalSelected >= totalAllowed)) ||
     culturalExpertises.includes(item as any)
   }
   onToggle={(e) => toggleGeneral(e)}
@@ -180,18 +167,6 @@ export default function ExpertisesPage() {
 
       </section>
 
-      <div className="mt-4 flex items-center gap-3">
-        <button
-          type="button"
-          onClick={clearExpertises}
-          className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50"
-        >
-          Clear selections
-        </button>
-        <span className="text-xs text-gray-500">
-          Cultural (2 required). Additional ({intCap} required). Selections save automatically.
-        </span>
-      </div>
     </div>
   );
 }
