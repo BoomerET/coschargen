@@ -1,7 +1,10 @@
 // app/stats/page.tsx
 "use client";
 
+import { useMemo } from "react";
 import { useCharacterStore, type StatKey } from "@/lib/store/character";
+import { Dices } from "lucide-react";
+import DieIcon from "@/app/components/DieIcon";
 
 const ATTRS: { key: StatKey; label: string }[] = [
   { key: "STR", label: "Strength (STR)" },
@@ -12,11 +15,68 @@ const ATTRS: { key: StatKey; label: string }[] = [
   { key: "PRE", label: "Presence (PRE)" },
 ];
 
+function calcLiftingCapacity(str: number): number {
+  const s = Math.max(0, Math.floor(str));
+  if (s === 0) return 100;
+  if (s <= 2) return 200;
+  if (s <= 4) return 500;
+  if (s <= 6) return 1_000;
+  if (s <= 8) return 5_000;
+  return 10_000; // 9+
+}
+
+function calcCarryingCapacity(str: number): number {
+  const s = Math.max(0, Math.floor(str));
+  if (s === 0) return 50;
+  if (s <= 2) return 100;
+  if (s <= 4) return 250;
+  if (s <= 6) return 500;
+  if (s <= 8) return 2_500;
+  return 5_000; // 9+
+}
+
+function calcMovementRate(spd: number): number {
+  const s = Math.max(0, Math.floor(spd));
+  if (s === 0) return 20;
+  if (s <= 2) return 25;
+  if (s <= 4) return 30;
+  if (s <= 6) return 40;
+  if (s <= 8) return 60;
+  return 80; // 9+
+}
+
+function calcRecoveryDie(wil: number): "1d4" | "1d6" | "1d8" | "1d10" | "1d12" | "1d0" {
+  const w = Math.max(0, Math.floor(wil));
+  if (w === 0) return "1d4";
+  if (w <= 2) return "1d6";
+  if (w <= 4) return "1d8";
+  if (w <= 6) return "1d10";
+  if (w <= 8) return "1d12";
+  return "1d0"; // 9+
+}
+
 export default function StatsPage() {
   const { stats, totalStatPoints, adjustStat, setStat, resetStats } = useCharacterStore();
 
   const used = Object.values(stats).reduce((s, v) => s + v, 0);
   const remaining = totalStatPoints - used;
+
+  const str = stats?.STR ?? 0;
+  const spd = stats?.SPD ?? 0;
+  const wil = stats?.WIL ?? 0;
+  //const awa = stats?.AWA ?? 0;
+  //const int = stats?.INT ?? 0;
+
+  const movementFt = useMemo(() => calcMovementRate(spd), [spd]);
+  const recoveryDie = useMemo(() => calcRecoveryDie(wil), [wil]);
+  const dieSides = parseInt((recoveryDie || "").replace(/^\d*d/, ""), 10) || 0;
+
+  const { lifting, carrying } = useMemo(() => {
+    return {
+      lifting: calcLiftingCapacity(str),
+      carrying: calcCarryingCapacity(str),
+    };
+  }, [str]);
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -78,6 +138,51 @@ export default function StatsPage() {
           );
         })}
       </div>
+      <section className="mt-8">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="rounded-xl border p-4">
+            <div className="text-sm text-gray-600">Lifting Capacity</div>
+            <div className="mt-1 text-2xl font-semibold">
+              {lifting.toLocaleString()} lbs
+            </div>
+          </div>
+
+          <div className="rounded-xl border p-4">
+            <div className="text-sm text-gray-600">Carrying Capacity</div>
+            <div className="mt-1 text-2xl font-semibold">
+              {carrying.toLocaleString()} lbs
+            </div>
+          </div>
+        </div>
+      </section>
+    <section className="mt-8">
+        <div className="grid gap-4 sm:grid-cols-2">
+          {/* Movement Rate (SPD) */}
+          <div className="rounded-xl border p-4">
+            <div className="text-sm text-gray-600">Movement Rate</div>
+            <div className="mt-1 text-2xl font-semibold">
+              {movementFt}ft/action
+            </div>
+          </div>
+
+          {/* Recovery Die (WIL) */}
+          <div className="rounded-xl border p-4">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-600">Recovery Die</div>
+              <DieIcon sides={dieSides} className="h-5 w-5 text-gray-500" />
+            </div>
+            <div className="mt-1 inline-flex items-center gap-2">
+              <span className="text-2xl font-semibold">{recoveryDie}</span>
+            </div>
+
+            {recoveryDie === "1d0" && (
+              <p className="mt-2 text-xs italic text-gray-500">
+                Note: a d0 always rolls 0. If this is intentional, you&rsquo;re all set; if you meant a higher die (e.g., d20), let me know and I’ll update the ladder.
+              </p>
+            )}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
