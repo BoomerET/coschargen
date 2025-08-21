@@ -3,7 +3,7 @@
 
 import { useMemo } from "react";
 import { useCharacterStore, type StatKey } from "@/lib/store/character";
-import { Eye } from "lucide-react";
+import { Eye, Shield, Brain, Sparkles } from "lucide-react";
 import DieIcon from "@/app/components/DieIcon";
 
 const ATTRS: { key: StatKey; label: string }[] = [
@@ -71,11 +71,28 @@ export default function StatsPage() {
   const used = Object.values(stats).reduce((s, v) => s + v, 0);
   const remaining = totalStatPoints - used;
 
-  const str = stats?.STR ?? 0;
-  const spd = stats?.SPD ?? 0;
-  const wil = stats?.WIL ?? 0;
-  const awa = stats?.AWA ?? 0;
+  //const str = stats?.STR ?? 0;
+  //const spd = stats?.SPD ?? 0;
+  //const wil = stats?.WIL ?? 0;
+  //const awa = stats?.AWA ?? 0;
   //const int = stats?.INT ?? 0;
+   const {
+  str = 0,
+  spd = 0,
+  int = 0,
+  wil = 0,
+  awa = 0,
+  pre = 0,
+} = {
+  str: stats?.STR ?? 0,
+  spd: stats?.SPD ?? 0,
+  int: stats?.INT ?? 0,
+  wil: stats?.WIL ?? 0,
+  awa: stats?.AWA ?? 0,
+  pre: stats?.PRE ?? 0,
+};
+
+
 
   const movementFt = useMemo(() => calcMovementRate(spd), [spd]);
   const recoveryDie = useMemo(() => calcRecoveryDie(wil), [wil]);
@@ -88,6 +105,15 @@ export default function StatsPage() {
       carrying: calcCarryingCapacity(str),
     };
   }, [str]);
+
+const defenses = useMemo(
+  () => ({
+    physical: 10 + str + spd,     // 10 + STR + SPD
+    cognitive: 10 + int + wil,    // 10 + INT + WIL
+    spiritual: 10 + awa + pre,    // 10 + AWA + PRE
+  }),
+  [str, spd, int, wil, awa, pre]
+);
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -206,6 +232,38 @@ export default function StatsPage() {
 
   </div>
 </section>
+    <section className="mt-8">
+
+  <div className="grid gap-4 md:grid-cols-3">
+    {/* Physical Defense */}
+    <div className="rounded-xl border p-4">
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-gray-600">Physical Defense</div>
+        <Shield className="h-5 w-5 text-gray-500" aria-hidden />
+      </div>
+      <div className="mt-1 text-2xl font-semibold">{defenses.physical}</div>
+    </div>
+
+    {/* Cognitive Defense */}
+    <div className="rounded-xl border p-4">
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-gray-600">Cognitive Defense</div>
+        <Brain className="h-5 w-5 text-gray-500" aria-hidden />
+      </div>
+      <div className="mt-1 text-2xl font-semibold">{defenses.cognitive}</div>
+    </div>
+
+    {/* Spiritual Defense */}
+    <div className="rounded-xl border p-4">
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-gray-600">Spiritual Defense</div>
+        <Sparkles className="h-5 w-5 text-gray-500" aria-hidden />
+      </div>
+      <div className="mt-1 text-2xl font-semibold">{defenses.spiritual}</div>
+    </div>
+  </div>
+</section>
+
 
     </div>
   );

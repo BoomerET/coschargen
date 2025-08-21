@@ -8,7 +8,7 @@ const ANCESTRIES = ["Human (Roshar)", "Singer"] as const satisfies Exclude<Ances
 const PATHS = ["Agent", "Envoy", "Hunter", "Leader", "Scholar", "Warrior"] as const satisfies Exclude<Path, "">[];
 
 export default function BasicsPage() {
-  const { name, ancestry, path, setName, setAncestry, setPath, reset } = useCharacterStore();
+  const { name, ancestry, path, setName, setAncestry, setPath, level, setLevel, reset } = useCharacterStore();
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -17,7 +17,7 @@ export default function BasicsPage() {
       {/* Name */}
       <div className="mb-6">
         <label htmlFor="name" className="mb-2 block text-sm font-medium text-gray-800">
-          Name
+          Player Character Name
         </label>
         <input
           id="name"
@@ -28,6 +28,29 @@ export default function BasicsPage() {
           className="w-full rounded-lg border px-3 py-2 outline-none ring-0 focus:border-gray-400"
         />
       </div>
+      <div className="mb-6">
+  <label htmlFor="level" className="mb-2 block text-sm font-medium text-gray-800">
+    Level
+  </label>
+  <input
+    id="level"
+    type="number"
+    inputMode="numeric"
+    min={1}
+    max={21}
+    step={1}
+    value={level}
+    onChange={(e) => {
+      const n = Number(e.target.value);
+      setLevel(isNaN(n) ? 1 : n); // setter clamps 1–21
+    }}
+    onBlur={(e) => {
+      if (e.currentTarget.value === "") setLevel(1);
+    }}
+    className="w-24 rounded-lg border px-2 py-1 text-center"
+    aria-describedby="level-hint"
+  />
+</div>
 
       {/* Ancestry */}
       <fieldset className="mb-6">
