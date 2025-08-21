@@ -3,7 +3,7 @@
 
 import { useMemo } from "react";
 import { useCharacterStore, type StatKey } from "@/lib/store/character";
-import { Dices } from "lucide-react";
+import { Eye } from "lucide-react";
 import DieIcon from "@/app/components/DieIcon";
 
 const ATTRS: { key: StatKey; label: string }[] = [
@@ -55,6 +55,16 @@ function calcRecoveryDie(wil: number): "1d4" | "1d6" | "1d8" | "1d10" | "1d12" |
   return "1d0"; // 9+
 }
 
+function calcSensesRange(awa: number): string {
+  const a = Math.max(0, Math.floor(awa));
+  if (a === 0) return "5 ft";
+  if (a <= 2) return "10 ft";
+  if (a <= 4) return "20 ft";
+  if (a <= 6) return "50 ft";
+  if (a <= 8) return "100 ft";
+  return "Unaffected by obscured senses"; // 9+
+}
+
 export default function StatsPage() {
   const { stats, totalStatPoints, adjustStat, setStat, resetStats } = useCharacterStore();
 
@@ -64,12 +74,13 @@ export default function StatsPage() {
   const str = stats?.STR ?? 0;
   const spd = stats?.SPD ?? 0;
   const wil = stats?.WIL ?? 0;
-  //const awa = stats?.AWA ?? 0;
+  const awa = stats?.AWA ?? 0;
   //const int = stats?.INT ?? 0;
 
   const movementFt = useMemo(() => calcMovementRate(spd), [spd]);
   const recoveryDie = useMemo(() => calcRecoveryDie(wil), [wil]);
   const dieSides = parseInt((recoveryDie || "").replace(/^\d*d/, ""), 10) || 0;
+  const sensesRange = useMemo(() => calcSensesRange(awa), [awa]);
 
   const { lifting, carrying } = useMemo(() => {
     return {
@@ -183,6 +194,19 @@ export default function StatsPage() {
           </div>
         </div>
       </section>
+      <section className="mt-8">
+  <div className="rounded-xl border p-4">
+    <div className="flex items-center justify-between">
+      <div className="text-sm text-gray-600">Senses Range</div>
+      <Eye className="h-5 w-5 text-gray-500" aria-hidden />
+    </div>
+    <div className="mt-1 text-2xl font-semibold">
+      {sensesRange}
+    </div>
+
+  </div>
+</section>
+
     </div>
   );
 }
