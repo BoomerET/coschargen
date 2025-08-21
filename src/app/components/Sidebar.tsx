@@ -10,6 +10,7 @@ import {
   BarChart3, // Stats
   Map, // Paths
   Feather, // Skills
+  ListChecks,
   Brain, // Expertises
   Wand2, // Talents
   Zap, // Surges
@@ -23,7 +24,7 @@ const NAV_ITEMS: { label: string; href: string; icon: IconType }[] = [
   { label: "Basics", href: "/basics", icon: BookOpen },
   { label: "Stats", href: "/stats", icon: BarChart3 },
   { label: "Paths", href: "/paths", icon: Map },
-  { label: "Skills", href: "/skills", icon: Feather },
+  { label: "Skills", href: "/skills", icon: ListChecks },
   { label: "Expertises", href: "/expertises", icon: Brain },
   { label: "Talents", href: "/talents", icon: Wand2 },
   { label: "Surges", href: "/surges", icon: Zap },

@@ -64,6 +64,53 @@ export type AnyExpertise =
 export type StatKey = "STR" | "SPD" | "INT" | "WIL" | "AWA" | "PRE";
 export type Stats = Record<StatKey, number>;
 
+// --- Types (near your other exports) ---
+export type SkillKey =
+  | "Agility" | "Athletics" | "Crafting" | "Deception" | "Deduction" | "Discipline"
+  | "Heavy Weaponry" | "Insight" | "Intimidation" | "Leadership" | "Light Weaponry"
+  | "Lore" | "Medicine" | "Perception" | "Persuasion" | "Stealth" | "Survival" | "Thievery";
+
+export type SkillRanks = Record<SkillKey, number>;
+
+// Governing attribute for each skill
+export const SKILL_ATTR: Record<SkillKey, StatKey> = {
+  Agility: "SPD",
+  Athletics: "STR",
+  Crafting: "INT",
+  Deception: "PRE",
+  Deduction: "INT",
+  Discipline: "WIL",
+  "Heavy Weaponry": "STR",
+  Insight: "AWA",
+  Intimidation: "WIL",
+  Leadership: "PRE",
+  "Light Weaponry": "SPD",
+  Lore: "INT",
+  Medicine: "INT",
+  Perception: "AWA",
+  Persuasion: "PRE",
+  Stealth: "SPD",
+  Survival: "AWA",
+  Thievery: "SPD",
+};
+
+export const PATH_GRANTED_SKILL: Record<Exclude<Path, "">, SkillKey> = {
+  Agent: "Insight",
+  Envoy: "Discipline",
+  Hunter: "Perception",
+  Leader: "Leadership",
+  Scholar: "Lore",
+  Warrior: "Athletics",
+};
+
+// --- Defaults ---
+const ZERO_SKILLS: SkillRanks = {
+  Agility: 0, Athletics: 0, Crafting: 0, Deception: 0, Deduction: 0, Discipline: 0,
+  "Heavy Weaponry": 0, Insight: 0, Intimidation: 0, Leadership: 0, "Light Weaponry": 0,
+  Lore: 0, Medicine: 0, Perception: 0, Persuasion: 0, Stealth: 0, Survival: 0, Thievery: 0,
+};
+
+
 type CharacterState = {
   // Basics
   name: string;
@@ -93,6 +140,10 @@ type CharacterState = {
   setStat: (key: StatKey, value: number) => void;
   adjustStat: (key: StatKey, delta: 1 | -1) => void;
   resetStats: () => void;
+
+  skillRanks: SkillRanks;                 // base ranks you assign (0–5)
+  setSkillRank: (key: SkillKey, v: number) => void;
+  resetSkills: () => void;
 
   // Global reset
   reset: () => void;
@@ -149,6 +200,16 @@ export const useCharacterStore = create<CharacterState>()(
             generalExpertises: newGeneral,
           };
         }),
+
+      skillRanks: { ...ZERO_SKILLS },
+
+setSkillRank: (key, raw) =>
+  set((state) => {
+    const v = Math.max(0, Math.min(5, Math.floor(raw)));
+    return { skillRanks: { ...state.skillRanks, [key]: v } };
+  }),
+
+resetSkills: () => set({ skillRanks: { ...ZERO_SKILLS } }),
  
       adjustStat: (key, delta) =>
         set((state) => {
@@ -241,7 +302,7 @@ toggleGeneral: (e) =>
     {
       name: "ccg-character",
       storage: createJSONStorage(() => localStorage),
-      version: 5,
+      version: 6,
       migrate: (state: any, version) => {
         if (version < 2) {
           state = {
@@ -253,6 +314,7 @@ toggleGeneral: (e) =>
         if (version < 3) state = { ...state, level: 1 };
         if (version < 4) state = { ...state, pathFocus: "" };
         if (version < 5) state = { ...state, culturalExpertises: [], generalExpertises: [] };
+        if (version < 6) state = { ...state, skillRanks: { ...ZERO_SKILLS } };
         return state;
       },
     }
