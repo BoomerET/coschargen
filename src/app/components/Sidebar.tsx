@@ -6,25 +6,27 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import type { ComponentType } from "react";
 import {
-  Utensils,
+  BookOpen,    // Basics
   BarChart3,   // Stats
   Map,         // Paths
   Brain,       // Expertises
   Wand2,       // Talents
   Zap,         // Surges
   Sparkles,    // Radiant Powers
+  Save,        // Export
 } from "lucide-react";
 
 type IconType = ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
 
 const NAV_ITEMS: { label: string; href: string; icon: IconType }[] = [
-  { label: "Basics", href: "/basics", icon: Utensils },
+  { label: "Basics", href: "/basics", icon: BookOpen },
   { label: "Stats", href: "/stats", icon: BarChart3 },
   { label: "Paths", href: "/paths", icon: Map },
   { label: "Expertises", href: "/expertises", icon: Brain },
   { label: "Talents", href: "/talents", icon: Wand2 },
   { label: "Surges", href: "/surges", icon: Zap },
   { label: "Radiant Powers", href: "/radiant-powers", icon: Sparkles },
+  { label: "Export to XML", href: "/export", icon: Save },
 ];
 
 export default function Sidebar() {
