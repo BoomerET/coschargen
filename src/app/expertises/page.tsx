@@ -95,68 +95,89 @@ export default function ExpertisesPage() {
       <section className="mb-8">
         <h2 className="mb-2 text-lg font-semibold">Cultural (choose 2)</h2>
         <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
-          {CULTURAL.map((e) => {
-            const checked = isCulturalChecked(e);
-            const disabled = !checked && culturalFull; // block new picks at cap
-            return (
-              <label
-                key={e}
-                className={[
-                  "flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2",
-                  disabled ? "opacity-50" : "hover:bg-gray-50",
-                ].join(" ")}
-              >
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  onChange={() => toggleCultural(e)}
-                  disabled={disabled}
-                  className="h-4 w-4"
-                  aria-label={e}
-                />
-                <span>{e}</span>
-              </label>
-            );
-          })}
+
+
+        {CULTURAL.map((e) => {
+  const checked = culturalExpertises.includes(e);
+  // Only disable when we’ve hit the overall cap and this item isn’t already checked
+  const disabled = !checked && totalSelected >= totalAllowed;
+
+  return (
+    <label
+      key={e}
+      className={[
+        "flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2",
+        disabled ? "opacity-50" : "hover:bg-gray-50",
+      ].join(" ")}
+    >
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={() => toggleCultural(e)}
+        disabled={disabled}
+        className="h-4 w-4"
+        aria-label={e}
+      />
+      <span>{e}</span>
+    </label>
+  );
+})}
+
+
         </div>
       </section>
 
       {/* Additional expertises (exactly INT) */}
       <section className="mb-8">
         <h2 className="mb-2 text-lg font-semibold">Additional Expertises (choose {intCap})</h2>
-
         {/* Armor */}
-        <Category
-          title="Armor"
-          items={ARMOR}
-          isChecked={isGeneralChecked}
-          isDisabled={(e) => (!isGeneralChecked(e) && generalFull) || isBlockedByCultural(e)}
-          onToggle={(e) => toggleGeneral(e)}
-        />
-        {/* Utility */}
-        <Category
-          title="Utility"
-          items={UTILITY}
-          isChecked={isGeneralChecked}
-          isDisabled={(e) => (!isGeneralChecked(e) && generalFull) || isBlockedByCultural(e)}
-          onToggle={(e) => toggleGeneral(e)}
-        />
-        {/* Cultural (extra picks allowed here too, but not the same as your 2) */}
-        <Category
-          title="Cultural"
-          items={CULTURAL}
-          isChecked={isGeneralChecked}
-          isDisabled={(e) => (!isGeneralChecked(e) && generalFull) || isBlockedByCultural(e)}
-          onToggle={(e) => toggleGeneral(e)}
-        />
-        {/* Weapon */}
-        <Category
-          title="Weapon"
-          items={WEAPONS}
-          isChecked={isGeneralChecked}
-          isDisabled={(e) => (!isGeneralChecked(e) && generalFull) || isBlockedByCultural(e)}
-          onToggle={(e) => toggleGeneral(e)}
-        />
+<Category
+  title="Armor"
+  items={ARMOR}
+  isChecked={isGeneralChecked}
+  isDisabled={(item) =>
+    (!isGeneralChecked(item) && totalSelected >= totalAllowed) ||
+    culturalExpertises.includes(item as any)
+  }
+  onToggle={(e) => toggleGeneral(e)}
+/>
+
+{/* Utility */}
+<Category
+  title="Utility"
+  items={UTILITY}
+  isChecked={isGeneralChecked}
+  isDisabled={(item) =>
+    (!isGeneralChecked(item) && totalSelected >= totalAllowed) ||
+    culturalExpertises.includes(item as any)
+  }
+  onToggle={(e) => toggleGeneral(e)}
+/>
+
+{/* Cultural (extra picks allowed here too) */}
+<Category
+  title="Cultural"
+  items={CULTURAL}
+  isChecked={isGeneralChecked}
+  isDisabled={(item) =>
+    (!isGeneralChecked(item) && totalSelected >= totalAllowed) ||
+    culturalExpertises.includes(item as any)
+  }
+  onToggle={(e) => toggleGeneral(e)}
+/>
+
+{/* Weapon */}
+<Category
+  title="Weapon"
+  items={WEAPONS}
+  isChecked={isGeneralChecked}
+  isDisabled={(item) =>
+    (!isGeneralChecked(item) && totalSelected >= totalAllowed) ||
+    culturalExpertises.includes(item as any)
+  }
+  onToggle={(e) => toggleGeneral(e)}
+/>
+
       </section>
 
       <div className="mt-4 flex items-center gap-3">

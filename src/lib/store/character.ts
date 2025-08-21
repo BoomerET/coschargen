@@ -168,48 +168,54 @@ export const useCharacterStore = create<CharacterState>()(
 
       // Expertise toggles
       toggleCultural: (e) =>
-    set((state) => {
+  set((state) => {
     const inCultural = state.culturalExpertises.includes(e);
     const intCap = state.stats.INT ?? 0;
-    const totalAllowed = 2 + intCap;
-    const totalSelected = state.culturalExpertises.length + state.generalExpertises.length;
+    const totalAllowed = 2 + intCap; // 2 required + INT more
+    const totalSelected =
+      state.culturalExpertises.length + state.generalExpertises.length;
 
     if (inCultural) {
-      // allow deselect, but ensure at least 2 remain cultural
+      // Allow deselect, but keep at least 2 Cultural
       if (state.culturalExpertises.length <= 2) return {};
       return {
         culturalExpertises: state.culturalExpertises.filter((x) => x !== e),
       };
     } else {
-      // allow select if we haven’t hit total cap
+      // Selecting a new Cultural:
+      // - Respect overall cap (2 + INT)
+      // - Remove from general if present (no dupes)
       if (totalSelected >= totalAllowed) return {};
-      // remove from general if it exists there (no duplicates)
-      const gen = state.generalExpertises.filter((x) => x !== e);
+      const generalWithoutDup = state.generalExpertises.filter((x) => x !== e);
       return {
         culturalExpertises: [...state.culturalExpertises, e],
-        generalExpertises: gen,
+        generalExpertises: generalWithoutDup,
       };
     }
   }),
 
-
-      toggleGeneral: (e) =>
+toggleGeneral: (e) =>
   set((state) => {
     const inCultural = state.culturalExpertises.includes(e);
     const inGeneral = state.generalExpertises.includes(e);
     const intCap = state.stats.INT ?? 0;
     const totalAllowed = 2 + intCap;
-    const totalSelected = state.culturalExpertises.length + state.generalExpertises.length;
+    const totalSelected =
+      state.culturalExpertises.length + state.generalExpertises.length;
 
     if (inGeneral) {
+      // deselect
       return {
         generalExpertises: state.generalExpertises.filter((x) => x !== e),
       };
     }
-    if (inCultural) return {}; // no dupes
-    if (totalSelected >= totalAllowed) return {}; // no more picks
+    // Don’t allow duplicates with Cultural
+    if (inCultural) return {};
+    // Respect overall cap
+    if (totalSelected >= totalAllowed) return {};
     return { generalExpertises: [...state.generalExpertises, e] };
   }),
+
 
       clearExpertises: () => set({ culturalExpertises: [], generalExpertises: [] }),
 
