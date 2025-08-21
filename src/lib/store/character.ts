@@ -14,12 +14,24 @@ export type Path =
 
 export type PathFocus =
   | ""
-  | "Investigator" | "Spy" | "Thief"
-  | "Diplomat" | "Faithful" | "Mentor"
-  | "Archer" | "Assassin" | "Tracker"
-  | "Champion" | "Officer" | "Politico"
-  | "Artifabrian" | "Strategist" | "Surgeon"
-  | "Duelist" | "Shardbearer" | "Soldier";
+  | "Investigator"
+  | "Spy"
+  | "Thief"
+  | "Diplomat"
+  | "Faithful"
+  | "Mentor"
+  | "Archer"
+  | "Assassin"
+  | "Tracker"
+  | "Champion"
+  | "Officer"
+  | "Politico"
+  | "Artifabrian"
+  | "Strategist"
+  | "Surgeon"
+  | "Duelist"
+  | "Shardbearer"
+  | "Soldier";
 
 export type StatKey = "STR" | "SPD" | "INT" | "WIL" | "AWA" | "PRE";
 export type Stats = Record<StatKey, number>;
@@ -84,7 +96,9 @@ export const useCharacterStore = create<CharacterState>()(
       setStat: (key, raw) => {
         const value = Math.max(0, Math.min(3, Math.floor(raw)));
         const state = get();
-        const usedWithoutThis = (Object.entries(state.stats) as [StatKey, number][])
+        const usedWithoutThis = (
+          Object.entries(state.stats) as [StatKey, number][]
+        )
           .filter(([k]) => k !== key)
           .reduce((s, [, v]) => s + v, 0);
         const cap = Math.min(3, state.totalStatPoints - usedWithoutThis);
@@ -124,16 +138,15 @@ export const useCharacterStore = create<CharacterState>()(
       migrate: (state: any, version) => {
         if (version < 2) {
           state = {
-      ...state,
-      stats: { STR: 0, SPD: 0, INT: 0, WIL: 0, AWA: 0, PRE: 0 },
-      totalStatPoints: 12,
-    };
-  }
-  if (version < 3) state = { ...state, level: 1 };
-  if (version < 4) state = { ...state, pathFocus: "" };
-  return state;
-},
+            ...state,
+            stats: { STR: 0, SPD: 0, INT: 0, WIL: 0, AWA: 0, PRE: 0 },
+            totalStatPoints: 12,
+          };
+        }
+        if (version < 3) state = { ...state, level: 1 };
+        if (version < 4) state = { ...state, pathFocus: "" };
+        return state;
+      },
     }
   )
 );
-

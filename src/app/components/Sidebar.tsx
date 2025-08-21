@@ -6,14 +6,14 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import type { ComponentType } from "react";
 import {
-  BookOpen,    // Basics
-  BarChart3,   // Stats
-  Map,         // Paths
-  Brain,       // Expertises
-  Wand2,       // Talents
-  Zap,         // Surges
-  Sparkles,    // Radiant Powers
-  Save,        // Export
+  BookOpen, // Basics
+  BarChart3, // Stats
+  Map, // Paths
+  Brain, // Expertises
+  Wand2, // Talents
+  Zap, // Surges
+  Sparkles, // Radiant Powers
+  Save, // Export
 } from "lucide-react";
 
 type IconType = ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
@@ -119,4 +119,3 @@ export default function Sidebar() {
     </>
   );
 }
-

@@ -2,13 +2,37 @@
 "use client";
 
 import Link from "next/link";
-import { useCharacterStore, type Ancestry, type Path } from "@/lib/store/character";
+import {
+  useCharacterStore,
+  type Ancestry,
+  type Path,
+} from "@/lib/store/character";
 
-const ANCESTRIES = ["Human (Roshar)", "Singer"] as const satisfies Exclude<Ancestry, "">[];
-const PATHS = ["Agent", "Envoy", "Hunter", "Leader", "Scholar", "Warrior"] as const satisfies Exclude<Path, "">[];
+const ANCESTRIES = ["Human (Roshar)", "Singer"] as const satisfies Exclude<
+  Ancestry,
+  ""
+>[];
+const PATHS = [
+  "Agent",
+  "Envoy",
+  "Hunter",
+  "Leader",
+  "Scholar",
+  "Warrior",
+] as const satisfies Exclude<Path, "">[];
 
 export default function BasicsPage() {
-  const { name, ancestry, path, setName, setAncestry, setPath, level, setLevel, reset } = useCharacterStore();
+  const {
+    name,
+    ancestry,
+    path,
+    setName,
+    setAncestry,
+    setPath,
+    level,
+    setLevel,
+    reset,
+  } = useCharacterStore();
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -16,7 +40,10 @@ export default function BasicsPage() {
 
       {/* Name */}
       <div className="mb-6">
-        <label htmlFor="name" className="mb-2 block text-sm font-medium text-gray-800">
+        <label
+          htmlFor="name"
+          className="mb-2 block text-sm font-medium text-gray-800"
+        >
           Player Character Name
         </label>
         <input
@@ -29,28 +56,31 @@ export default function BasicsPage() {
         />
       </div>
       <div className="mb-6">
-  <label htmlFor="level" className="mb-2 block text-sm font-medium text-gray-800">
-    Level
-  </label>
-  <input
-    id="level"
-    type="number"
-    inputMode="numeric"
-    min={1}
-    max={21}
-    step={1}
-    value={level}
-    onChange={(e) => {
-      const n = Number(e.target.value);
-      setLevel(isNaN(n) ? 1 : n); // setter clamps 1–21
-    }}
-    onBlur={(e) => {
-      if (e.currentTarget.value === "") setLevel(1);
-    }}
-    className="w-24 rounded-lg border px-2 py-1 text-center"
-    aria-describedby="level-hint"
-  />
-</div>
+        <label
+          htmlFor="level"
+          className="mb-2 block text-sm font-medium text-gray-800"
+        >
+          Level
+        </label>
+        <input
+          id="level"
+          type="number"
+          inputMode="numeric"
+          min={1}
+          max={21}
+          step={1}
+          value={level}
+          onChange={(e) => {
+            const n = Number(e.target.value);
+            setLevel(isNaN(n) ? 1 : n); // setter clamps 1–21
+          }}
+          onBlur={(e) => {
+            if (e.currentTarget.value === "") setLevel(1);
+          }}
+          className="w-24 rounded-lg border px-2 py-1 text-center"
+          aria-describedby="level-hint"
+        />
+      </div>
 
       {/* Ancestry */}
       <fieldset className="mb-6">
@@ -59,7 +89,10 @@ export default function BasicsPage() {
         </legend>
         <div className="grid gap-2 sm:grid-cols-2">
           {ANCESTRIES.map((opt) => (
-            <label key={opt} className="flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 hover:bg-gray-50">
+            <label
+              key={opt}
+              className="flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 hover:bg-gray-50"
+            >
               <input
                 type="radio"
                 name="ancestry"
@@ -82,7 +115,10 @@ export default function BasicsPage() {
         </legend>
         <div className="grid gap-2 sm:grid-cols-3">
           {PATHS.map((opt) => (
-            <label key={opt} className="flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 hover:bg-gray-50">
+            <label
+              key={opt}
+              className="flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 hover:bg-gray-50"
+            >
               <input
                 type="radio"
                 name="path"
@@ -106,9 +142,10 @@ export default function BasicsPage() {
         >
           Clear
         </button>
-        <span className="text-sm text-gray-500">Selections are saved automatically.</span>
+        <span className="text-sm text-gray-500">
+          Selections are saved automatically.
+        </span>
       </div>
     </div>
   );
 }
-

@@ -2,7 +2,11 @@
 "use client";
 
 import Link from "next/link";
-import { useCharacterStore, type Path, type PathFocus } from "@/lib/store/character";
+import {
+  useCharacterStore,
+  type Path,
+  type PathFocus,
+} from "@/lib/store/character";
 
 const FOCI: Record<Exclude<Path, "">, readonly Exclude<PathFocus, "">[]> = {
   Agent: ["Investigator", "Spy", "Thief"],
@@ -22,7 +26,9 @@ export default function PathsPage() {
         <h1 className="mb-2 text-2xl font-bold">Paths</h1>
         <p className="text-sm text-gray-600">
           Choose a Path on the{" "}
-          <Link href="/basics" className="underline">Basics</Link>{" "}
+          <Link href="/basics" className="underline">
+            Basics
+          </Link>{" "}
           page first, then return here to select a focus.
         </p>
       </div>
@@ -67,4 +73,3 @@ export default function PathsPage() {
     </div>
   );
 }
-

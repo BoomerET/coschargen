@@ -45,7 +45,9 @@ function calcMovementRate(spd: number): number {
   return 80; // 9+
 }
 
-function calcRecoveryDie(wil: number): "1d4" | "1d6" | "1d8" | "1d10" | "1d12" | "1d0" {
+function calcRecoveryDie(
+  wil: number
+): "1d4" | "1d6" | "1d8" | "1d10" | "1d12" | "1d0" {
   const w = Math.max(0, Math.floor(wil));
   if (w === 0) return "1d4";
   if (w <= 2) return "1d6";
@@ -66,7 +68,8 @@ function calcSensesRange(awa: number): string {
 }
 
 export default function StatsPage() {
-  const { stats, totalStatPoints, adjustStat, setStat, resetStats } = useCharacterStore();
+  const { stats, totalStatPoints, adjustStat, setStat, resetStats } =
+    useCharacterStore();
 
   const used = Object.values(stats).reduce((s, v) => s + v, 0);
   const remaining = totalStatPoints - used;
@@ -76,23 +79,21 @@ export default function StatsPage() {
   //const wil = stats?.WIL ?? 0;
   //const awa = stats?.AWA ?? 0;
   //const int = stats?.INT ?? 0;
-   const {
-  str = 0,
-  spd = 0,
-  int = 0,
-  wil = 0,
-  awa = 0,
-  pre = 0,
-} = {
-  str: stats?.STR ?? 0,
-  spd: stats?.SPD ?? 0,
-  int: stats?.INT ?? 0,
-  wil: stats?.WIL ?? 0,
-  awa: stats?.AWA ?? 0,
-  pre: stats?.PRE ?? 0,
-};
-
-
+  const {
+    str = 0,
+    spd = 0,
+    int = 0,
+    wil = 0,
+    awa = 0,
+    pre = 0,
+  } = {
+    str: stats?.STR ?? 0,
+    spd: stats?.SPD ?? 0,
+    int: stats?.INT ?? 0,
+    wil: stats?.WIL ?? 0,
+    awa: stats?.AWA ?? 0,
+    pre: stats?.PRE ?? 0,
+  };
 
   const movementFt = useMemo(() => calcMovementRate(spd), [spd]);
   const recoveryDie = useMemo(() => calcRecoveryDie(wil), [wil]);
@@ -106,39 +107,43 @@ export default function StatsPage() {
     };
   }, [str]);
 
-const defenses = useMemo(
-  () => ({
-    physical: 10 + str + spd,     // 10 + STR + SPD
-    cognitive: 10 + int + wil,    // 10 + INT + WIL
-    spiritual: 10 + awa + pre,    // 10 + AWA + PRE
-  }),
-  [str, spd, int, wil, awa, pre]
-);
+  const defenses = useMemo(
+    () => ({
+      physical: 10 + str + spd, // 10 + STR + SPD
+      cognitive: 10 + int + wil, // 10 + INT + WIL
+      spiritual: 10 + awa + pre, // 10 + AWA + PRE
+    }),
+    [str, spd, int, wil, awa, pre]
+  );
 
   return (
     <div className="mx-auto max-w-3xl">
       <h1 className="mb-2 text-2xl font-bold">Stats</h1>
       <p className="mb-6 text-sm text-gray-600">
-        Distribute {totalStatPoints} points among six attributes. Each attribute ranges from 0–3.
+        Distribute {totalStatPoints} points among six attributes. Each attribute
+        ranges from 0–3.
       </p>
 
       {/* Remaining points */}
       <div
         className={[
           "mb-4 inline-flex items-center rounded-full border px-3 py-1 text-sm",
-          remaining === 0 ? "bg-gray-900 text-white border-gray-900" : "bg-gray-50",
+          remaining === 0
+            ? "bg-gray-900 text-white border-gray-900"
+            : "bg-gray-50",
         ].join(" ")}
         aria-live="polite"
       >
-        Remaining points: <span className="ml-1 font-semibold">{remaining}</span>
+        Remaining points:{" "}
+        <span className="ml-1 font-semibold">{remaining}</span>
       </div>
- <button
-          type="button"
-          onClick={resetStats}
-          className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50"
-        >
-          Reset all to 0
-        </button>
+      <button
+        type="button"
+        onClick={resetStats}
+        className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50"
+      >
+        Reset all to 0
+      </button>
 
       {/* Grid of attributes */}
       <div className="grid gap-4 sm:grid-cols-2">
@@ -192,7 +197,7 @@ const defenses = useMemo(
           </div>
         </div>
       </section>
-    <section className="mt-8">
+      <section className="mt-8">
         <div className="grid gap-4 sm:grid-cols-2">
           {/* Movement Rate (SPD) */}
           <div className="rounded-xl border p-4">
@@ -214,58 +219,59 @@ const defenses = useMemo(
 
             {recoveryDie === "1d0" && (
               <p className="mt-2 text-xs italic text-gray-500">
-                Note: a d0 always rolls 0. If this is intentional, you&rsquo;re all set; if you meant a higher die (e.g., d20), let me know and I’ll update the ladder.
+                Note: a d0 always rolls 0. If this is intentional, you&rsquo;re
+                all set; if you meant a higher die (e.g., d20), let me know and
+                I’ll update the ladder.
               </p>
             )}
           </div>
         </div>
       </section>
       <section className="mt-8">
-  <div className="rounded-xl border p-4">
-    <div className="flex items-center justify-between">
-      <div className="text-sm text-gray-600">Senses Range</div>
-      <Eye className="h-5 w-5 text-gray-500" aria-hidden />
-    </div>
-    <div className="mt-1 text-2xl font-semibold">
-      {sensesRange}
-    </div>
+        <div className="rounded-xl border p-4">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-600">Senses Range</div>
+            <Eye className="h-5 w-5 text-gray-500" aria-hidden />
+          </div>
+          <div className="mt-1 text-2xl font-semibold">{sensesRange}</div>
+        </div>
+      </section>
+      <section className="mt-8">
+        <div className="grid gap-4 md:grid-cols-3">
+          {/* Physical Defense */}
+          <div className="rounded-xl border p-4">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-600">Physical Defense</div>
+              <Shield className="h-5 w-5 text-gray-500" aria-hidden />
+            </div>
+            <div className="mt-1 text-2xl font-semibold">
+              {defenses.physical}
+            </div>
+          </div>
 
-  </div>
-</section>
-    <section className="mt-8">
+          {/* Cognitive Defense */}
+          <div className="rounded-xl border p-4">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-600">Cognitive Defense</div>
+              <Brain className="h-5 w-5 text-gray-500" aria-hidden />
+            </div>
+            <div className="mt-1 text-2xl font-semibold">
+              {defenses.cognitive}
+            </div>
+          </div>
 
-  <div className="grid gap-4 md:grid-cols-3">
-    {/* Physical Defense */}
-    <div className="rounded-xl border p-4">
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-gray-600">Physical Defense</div>
-        <Shield className="h-5 w-5 text-gray-500" aria-hidden />
-      </div>
-      <div className="mt-1 text-2xl font-semibold">{defenses.physical}</div>
-    </div>
-
-    {/* Cognitive Defense */}
-    <div className="rounded-xl border p-4">
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-gray-600">Cognitive Defense</div>
-        <Brain className="h-5 w-5 text-gray-500" aria-hidden />
-      </div>
-      <div className="mt-1 text-2xl font-semibold">{defenses.cognitive}</div>
-    </div>
-
-    {/* Spiritual Defense */}
-    <div className="rounded-xl border p-4">
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-gray-600">Spiritual Defense</div>
-        <Sparkles className="h-5 w-5 text-gray-500" aria-hidden />
-      </div>
-      <div className="mt-1 text-2xl font-semibold">{defenses.spiritual}</div>
-    </div>
-  </div>
-</section>
-
-
+          {/* Spiritual Defense */}
+          <div className="rounded-xl border p-4">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-600">Spiritual Defense</div>
+              <Sparkles className="h-5 w-5 text-gray-500" aria-hidden />
+            </div>
+            <div className="mt-1 text-2xl font-semibold">
+              {defenses.spiritual}
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
-
