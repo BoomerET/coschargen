@@ -145,6 +145,7 @@ type CharacterState = {
   setSkillRank: (key: SkillKey, v: number) => void;
   resetSkills: () => void;
 
+  skillPointsTotal: number;
   // Global reset
   reset: () => void;
 };
@@ -202,14 +203,35 @@ export const useCharacterStore = create<CharacterState>()(
         }),
 
       skillRanks: { ...ZERO_SKILLS },
+      skillPointTotal: 4,
 
-setSkillRank: (key, raw) =>
+
+      setSkillRank: (key, raw) =>
   set((state) => {
-    const v = Math.max(0, Math.min(5, Math.floor(raw)));
-    return { skillRanks: { ...state.skillRanks, [key]: v } };
+    const current = state.skillRanks[key] ?? 0;
+
+    // clamp requested value to 0..2 (creation cap)
+    let desired = Math.max(0, Math.min(2, Math.floor(raw)));
+
+    // how many points are spent on OTHER skills
+    const spentWithoutThis = (Object.entries(state.skillRanks) as [SkillKey, number][])
+      .filter(([k]) => k !== key)
+      .reduce((s, [, v]) => s + v, 0);
+
+    // you can increase this skill by at most the remaining budget
+    const remaining = state.skillPointsTotal - spentWithoutThis;
+
+    // final cap for this field = min(2, current + remaining)
+    const capForThis = Math.min(2, current + Math.max(0, remaining));
+
+    const final = Math.max(0, Math.min(desired, capForThis));
+
+    // no-op if unchanged
+    if (final === current) return {};
+    return { skillRanks: { ...state.skillRanks, [key]: final } };
   }),
 
-resetSkills: () => set({ skillRanks: { ...ZERO_SKILLS } }),
+    resetSkills: () => set({ skillRanks: { ...ZERO_SKILLS } }),
  
       adjustStat: (key, delta) =>
         set((state) => {
@@ -302,7 +324,7 @@ toggleGeneral: (e) =>
     {
       name: "ccg-character",
       storage: createJSONStorage(() => localStorage),
-      version: 6,
+      version: 7,
       migrate: (state: any, version) => {
         if (version < 2) {
           state = {
@@ -315,6 +337,7 @@ toggleGeneral: (e) =>
         if (version < 4) state = { ...state, pathFocus: "" };
         if (version < 5) state = { ...state, culturalExpertises: [], generalExpertises: [] };
         if (version < 6) state = { ...state, skillRanks: { ...ZERO_SKILLS } };
+        if (version < 7) state = { ...state, skillPointsTotal: 4 };
         return state;
       },
     }
