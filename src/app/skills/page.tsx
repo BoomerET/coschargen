@@ -7,6 +7,7 @@ import {
   type SkillKey,
   SKILL_ATTR,
   PATH_GRANTED_SKILL,
+  getPathGrantedSkill,
 } from "@/lib/store/character";
 
 const SKILLS: SkillKey[] = [
@@ -30,16 +31,19 @@ export default function SkillsPage() {
   } = useCharacterStore();
 
   const pathGranted: SkillKey | null = useMemo(
-    () => (path ? PATH_GRANTED_SKILL[path] : null),
-    [path]
-  );
+  () => (path ? PATH_GRANTED_SKILL[path] : null),
+  [path]
+);
 
-  const pointsSpent = useMemo(
-    () => Object.values(skillRanks).reduce((s, v) => s + v, 0),
-    [skillRanks]
-  );
-  const pointsRemaining = Math.max(0, skillPointsTotal - pointsSpent);
-
+// Points spent using creation cost semantics
+const pointsSpent = useMemo(() => {
+  return (Object.entries(skillRanks) as [SkillKey, number][])
+    .reduce((sum, [k, base]) => {
+      const cost = pathGranted === k ? Math.max(0, base - 1) : base;
+      return sum + cost;
+    }, 0);
+}, [skillRanks, pathGranted]);
+const pointsRemaining = Math.max(0, skillPointsTotal - pointsSpent);
   return (
     <div className="mx-auto max-w-5xl">
       <h1 className="mb-2 text-2xl font-bold">Skills</h1>
@@ -72,34 +76,35 @@ export default function SkillsPage() {
           const checkValue = effective + attrVal;
 
           // ----- INPUT MAPPING -----
-          // For non-Path skills: input shows/stores base directly (0..2, budget-limited).
-          // For Path skill: input shows EFFECTIVE rank (1..2). We map back to base:
-          //   desired 1 -> base 0  (no points)
-          //   desired 2 -> base 2  (costs up to 2 points; 1 if base was 1)
-          let inputMin = 0;
-          let inputMax = Math.min(2, base + pointsRemaining); // non-Path default
-          let inputValue = base; // non-Path default
-          if (isPathSkill) {
-            inputMin = 1; // floor from Path
-            // Can we reach 2 given current base + remaining?
-            const additionalNeededForTwo = Math.max(0, 2 - base);
-            const canReachTwo = pointsRemaining >= additionalNeededForTwo;
-            inputMax = canReachTwo ? 2 : 1;
-            inputValue = effective; // show the floor (1) even when base=0
-          }
 
-          const onChange = (raw: number) => {
-            if (!isPathSkill) {
-              // Store clamps to 0..2 and budget anyway
-              setSkillRank(k, raw);
-            } else {
-              const desired = clamp(raw, inputMin, inputMax); // 1 or 2
-              // Normalize to a non-wasteful base:
-              // 1 => base 0 (free floor), 2 => base 2
-              const mappedBase = desired === 1 ? 0 : 2;
-              setSkillRank(k, mappedBase);
-            }
-          };
+
+// For the Path skill, input shows EFFECTIVE rank (1..2) and maps back to base:
+//  - 1 => base 0 (free)
+//  - 2 => base 2 (cost = 1)
+let inputMin = 0;
+let inputMax = Math.min(2, base + pointsRemaining);
+let inputValue = base;
+
+// Compute whether we can raise Path skill to 2 given remaining points
+if (isPathSkill) {
+  inputMin = 1;
+  // current cost for Path skill is 0 if base < 2 else 1
+  const currentCost = base >= 2 ? 1 : 0;
+  const canReachTwo = pointsRemaining >= (1 - currentCost);
+  inputMax = canReachTwo ? 2 : 1;
+  inputValue = Math.max(base, 1); // show 1 when base=0 due to the free floor
+}
+
+const onChange = (raw: number) => {
+  if (!isPathSkill) {
+    setSkillRank(k, raw); // store clamps to budget and 0..2
+  } else {
+    const desired = Math.max(inputMin, Math.min(inputMax, Math.floor(raw))); // 1 or 2
+    const mappedBase = desired === 1 ? 0 : 2; // free floor vs. paid upgrade
+    setSkillRank(k, mappedBase);
+  }
+};
+
 
           return (
             <div key={k} className="rounded-xl border p-4">

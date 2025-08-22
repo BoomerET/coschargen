@@ -1,52 +1,42 @@
+// src/app/export/page.tsx
 "use client";
 
 import { useMemo } from "react";
-import { useCharacterStore } from "@/lib/store/character";
-import { PATH_GRANTED_SKILL, SKILL_ATTR, type SkillKey } from "@/lib/store/character";
-import { Button } from "react-aria-components"; // remove if you’re not using this; plain <button> works
+import {
+  useCharacterStore,
+  SKILL_ATTR,
+  PATH_GRANTED_SKILL,
+  PATH_KEY_TALENT,
+  type SkillKey,
+  type StatKey,
+  type Path,
+  type PathFocus,
+} from "@/lib/store/character";
 
-// If you already have a central SKILLS list, import it instead:
+function isFunction(x: unknown): x is (...args: unknown[]) => unknown {
+  return typeof x === "function";
+}
+
+/** FG stat labels expect lowercase full names (e.g., "awareness"). */
+const FG_STAT_LABEL: Record<StatKey, string> = {
+  STR: "strength",
+  SPD: "speed",
+  INT: "intellect",
+  WIL: "willpower",
+  AWA: "awareness",
+  PRE: "presence",
+};
+
 const SKILLS: SkillKey[] = [
   "Agility","Athletics","Crafting","Deception","Deduction","Discipline",
   "Heavy Weaponry","Insight","Intimidation","Leadership","Light Weaponry",
   "Lore","Medicine","Perception","Persuasion","Stealth","Survival","Thievery",
 ];
 
-// ------- small helpers for derived fields -------
-function keyTalent(ancestry: string, path: string | ""): string | null {
-  if (ancestry === "Singer") return "Change Form";
-  if (ancestry === "Human (Roshar)") {
-    if (!path) return null;
-    return {
-      Agent: "Opportunist",
-      Envoy: "Rousing Presence",
-      Hunter: "Seek Quarry",
-      Leader: "Decisive Command",
-      Scholar: "Erudition",
-      Warrior: "Vigilant Stance",
-    }[path as keyof typeof PATH_GRANTED_SKILL] as string;
-  }
-  return null;
-}
+// ───────────────────────────────────────────────────────────────────────────────
+// Derived helpers (same logic you use elsewhere)
+// ───────────────────────────────────────────────────────────────────────────────
 
-function liftingCapacity(str: number): number {
-  const s = Math.max(0, Math.floor(str));
-  if (s === 0) return 100;
-  if (s <= 2) return 200;
-  if (s <= 4) return 500;
-  if (s <= 6) return 1_000;
-  if (s <= 8) return 5_000;
-  return 10_000;
-}
-function carryingCapacity(str: number): number {
-  const s = Math.max(0, Math.floor(str));
-  if (s === 0) return 50;
-  if (s <= 2) return 100;
-  if (s <= 4) return 250;
-  if (s <= 6) return 500;
-  if (s <= 8) return 2_500;
-  return 5_000;
-}
 function movementRate(spd: number): number {
   const s = Math.max(0, Math.floor(spd));
   if (s === 0) return 20;
@@ -67,106 +57,282 @@ function recoveryDie(wil: number): "1d4"|"1d6"|"1d8"|"1d10"|"1d12"|"1d0" {
 }
 function sensesRange(awa: number): string {
   const a = Math.max(0, Math.floor(awa));
-  if (a === 0) return "5 ft";
-  if (a <= 2) return "10 ft";
-  if (a <= 4) return "20 ft";
-  if (a <= 6) return "50 ft";
-  if (a <= 8) return "100 ft";
+  if (a === 0) return "5 feet";
+  if (a <= 2) return "10 feet";
+  if (a <= 4) return "20 feet";
+  if (a <= 6) return "50 feet";
+  if (a <= 8) return "100 feet";
   return "Unaffected by obscured senses";
 }
+function defenses(stats: Record<StatKey, number>) {
+  const { STR, SPD, INT, WIL, AWA, PRE } = stats;
+  return {
+    physical: 10 + (STR ?? 0) + (SPD ?? 0),
+    cognitive: 10 + (INT ?? 0) + (WIL ?? 0),
+    spiritual: 10 + (AWA ?? 0) + (PRE ?? 0),
+  };
+}
+function effectiveRank(base: number, isPathSkill: boolean): number {
+  return Math.min(5, Math.max(base, isPathSkill ? 1 : 0));
+}
+function xmlEscape(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+// Turn "1d8" -> "d8" for <recdie type="dice">d8</recdie>
+function asFgDie(die: string): string {
+  return die.startsWith("1d") ? ("d" + die.slice(2)) : die.replace(/^1/, "");
+}
+
+// ───────────────────────────────────────────────────────────────────────────────
+// Build Fantasy Grounds XML using StreetUrchin.xml as a template
+// ───────────────────────────────────────────────────────────────────────────────
+
+function buildFantasyGroundsXml(allValues: Record<string, unknown>) {
+  const name = (allValues.name as string) || "Unnamed Hero";
+  const ancestry = (allValues.ancestry as string) || "";
+  const level = (allValues.level as number) ?? 1;
+  const path = (allValues.path as Path) || "";
+  const pathFocus = (allValues.pathFocus as PathFocus) || "";
+  const stats = (allValues.stats as Record<StatKey, number>) || {
+    STR: 0, SPD: 0, INT: 0, WIL: 0, AWA: 0, PRE: 0,
+  };
+  const skillRanks = (allValues.skillRanks as Record<SkillKey, number>) || {};
+  const cultural = (allValues.culturalExpertises as string[]) || [];
+  const additional = (allValues.generalExpertises as string[]) || [];
+  const selectedPathTalent = (allValues.selectedPathTalent as string) || "";
+
+  const keyTalent =
+    path ? PATH_KEY_TALENT[path as Exclude<Path, "">] : undefined;
+
+  // Singer extra talent handled in the Talents page; here we strictly export saved/derived fields
+  const derivedDef = defenses(stats);
+  const move = movementRate(stats.SPD ?? 0);
+  const recDie = asFgDie(recoveryDie(stats.WIL ?? 0));
+  const senses = sensesRange(stats.AWA ?? 0);
+
+  // Which skill gets the Path floor of 1?
+  const pathGrantedSkill = path ? PATH_GRANTED_SKILL[path as Exclude<Path, "">] : undefined;
+
+  // Build <skilllist> entries
+  let skillListXml = "";
+  let totalSkillRanks = 0;
+
+  SKILLS.forEach((k, idx) => {
+    const base = skillRanks[k] ?? 0; // 0..2 during creation
+    totalSkillRanks += base;
+    const isPathSkill = pathGrantedSkill === k;
+    const eff = effectiveRank(base, isPathSkill);
+    const attrKey = SKILL_ATTR[k];
+    const attrVal = stats[attrKey] ?? 0;
+    const total = eff + (attrVal ?? 0);
+    const id = String(idx + 1).padStart(5, "0");
+
+    skillListXml += `
+      <id-${id}>
+        <bonus type="number">0</bonus>
+        <name type="string">${xmlEscape(k)}</name>
+        <rank type="number">${eff === base ? base : base}</rank>
+        <stat type="string">${FG_STAT_LABEL[attrKey]}</stat>
+        <total type="number">${total}</total>
+      </id-${id}>`;
+  });
+
+  // Build <expertise> — merge cultural + additional
+  let expertiseXml = "";
+  const allExps = [...cultural, ...additional];
+  allExps.forEach((ex, i) => {
+    const id = String(i + 1).padStart(5, "0");
+    expertiseXml += `
+      <id-${id}>
+        <name type="string">${xmlEscape(ex)}</name>
+      </id-${id}>`;
+  });
+
+    // Build <talent> — include Path Key Talent, Singer's Change Form, and Human extra pick
+  const talentItems: Array<{
+    name: string;
+    source?: string;
+    specialty?: string;
+    activation?: string;
+  }> = [];
+
+  if (keyTalent) {
+    talentItems.push({
+      name: keyTalent,
+      source: path || "",
+      activation: "[*]",
+    });
+  }
+
+  // ✅ Singers always get Change Form in addition to the Path Key Talent
+  if (ancestry === "Singer") {
+    talentItems.push({
+      name: "Change Form",
+      source: "Singer",
+      activation: "[*]",
+    });
+  }
+
+  // Human additional Path talent (if chosen)
+  if (selectedPathTalent) {
+    talentItems.push({
+      name: selectedPathTalent,
+      source: path || "",
+      specialty: pathFocus || undefined,
+      activation: "[*]",
+    });
+  }
+
+  const totalTalents = talentItems.length;
+
+  let talentXml = "";
+  talentItems.forEach((t, i) => {
+    const id = String(i + 1).padStart(5, "0");
+    talentXml += `
+      <id-${id}>
+        <activation type="string">${xmlEscape(t.activation ?? "[*]")}</activation>
+        <name type="string">${xmlEscape(t.name)}</name>
+        ${t.source ? `<source type="string">${xmlEscape(t.source)}</source>` : ""}
+        ${t.specialty ? `<specialty type="string">${xmlEscape(t.specialty)}</specialty>` : ""}
+      </id-${id}>`;
+  });
+
+
+  // Character <path> line like "Agent(Thief)"
+  const pathLine =
+    path ? `${path}${pathFocus ? `(${pathFocus})` : ""}` : "";
+
+  // XML payload
+  const xml = `<?xml version="1.0" encoding="utf-8"?>
+<root version="4.8" dataversion="20241002" release="8.1|CoreRPG:7">
+  <character>
+    <name type="string">${xmlEscape(name)}</name>
+    ${ancestry ? `
+    <ancestry>
+      <name type="string">${xmlEscape(ancestry)}</name>
+    </ancestry>` : ""}
+
+    <level type="number">${level}</level>
+    ${pathLine ? `<path type="string">${xmlEscape(pathLine)}</path>` : ""}
+
+    <attributes>
+      <awareness><score type="number">${stats.AWA ?? 0}</score></awareness>
+      <intellect><score type="number">${stats.INT ?? 0}</score></intellect>
+      <presence><score type="number">${stats.PRE ?? 0}</score></presence>
+      <speed><score type="number">${stats.SPD ?? 0}</score></speed>
+      <strength><score type="number">${stats.STR ?? 0}</score></strength>
+      <willpower><score type="number">${stats.WIL ?? 0}</score></willpower>
+    </attributes>
+
+    <defenses>
+      <cognitivedefense><score type="number">${derivedDef.cognitive}</score></cognitivedefense>
+      <physicaldefense><score type="number">${derivedDef.physical}</score></physicaldefense>
+      <spiritualdefense><score type="number">${derivedDef.spiritual}</score></spiritualdefense>
+    </defenses>
+
+    <movement type="number">${move}</movement>
+    <recdie type="dice">${recDie}</recdie>
+    <senses type="string">${xmlEscape(senses)}</senses>
+
+    ${expertiseXml ? `<expertise>${expertiseXml}
+    </expertise>` : ""}
+
+    ${talentXml ? `<talent>${talentXml}
+    </talent>` : ""}
+
+    <skilllist>${skillListXml}
+    </skilllist>
+
+    <totalskillranks type="number">${totalSkillRanks}</totalskillranks>
+    <totaltalents type="number">${totalTalents}</totaltalents>
+  </character>
+</root>`.replace(/[ \t]+\n/g, "\n"); // trim trailing spaces
+  return xml;
+}
+
+// ───────────────────────────────────────────────────────────────────────────────
 
 export default function ExportPage() {
-  // Grab the entire store state (values only)
-  const state = useCharacterStore();
-  const {
-    name, ancestry, path, pathFocus, level,
-    stats, totalStatPoints,
-    culturalExpertises, generalExpertises,
-    skillRanks, skillPointsTotal,
-  } = state;
+  // Live store snapshot
+  const all = useCharacterStore();
 
-  // Build a plain “state only” snapshot (no setter functions)
-  const storeSnapshot = useMemo(() => ({
-    basics: { name, ancestry, path, pathFocus, level },
-    stats: { ...stats, totalStatPoints },
-    expertises: {
-      cultural: culturalExpertises,
-      additional: generalExpertises,
-    },
-    skills: {
-      baseRanks: skillRanks,
-      pointsTotal: skillPointsTotal,
-      pointsSpent: Object.values(skillRanks).reduce((s, v) => s + v, 0),
-    },
-    timestamp: new Date().toISOString(),
-  }), [
-    name, ancestry, path, pathFocus, level,
-    stats, totalStatPoints, culturalExpertises, generalExpertises,
-    skillRanks, skillPointsTotal,
-  ]);
+  // Values only (strip functions)
+  const valuesOnly = useMemo(() => {
+    const entries = Object.entries(all as Record<string, unknown>).filter(
+      ([, v]) => !isFunction(v)
+    );
+    return Object.fromEntries(entries);
+  }, [all]);
 
-  // Derived snapshot (effective skill ranks, key talent, common derived stats)
-  const derivedSnapshot = useMemo(() => {
-    const str = stats.STR ?? 0;
-    const spd = stats.SPD ?? 0;
-    const int = stats.INT ?? 0;
-    const wil = stats.WIL ?? 0;
-    const awa = stats.AWA ?? 0;
-    const pre = stats.PRE ?? 0;
+  // Derived: final skill values (effective + attribute)
+  const derivedSkills = useMemo(() => {
+    const stats = valuesOnly.stats as Record<StatKey, number> | undefined;
+    const path = valuesOnly.path as Path | undefined;
+    const skillRanks = valuesOnly.skillRanks as Record<SkillKey, number> | undefined;
+    if (!stats || !skillRanks) return {};
 
-    const pathGranted = path ? PATH_GRANTED_SKILL[path as keyof typeof PATH_GRANTED_SKILL] : undefined;
+    const pathGranted = path ? PATH_GRANTED_SKILL[path as Exclude<Path, "">] : undefined;
 
-    const effectiveSkillRanks = Object.fromEntries(
+    return Object.fromEntries(
       SKILLS.map((k) => {
         const base = skillRanks[k] ?? 0;
-        const eff = Math.min(5, Math.max(base, pathGranted === k ? 1 : 0));
+        const isPathSkill = pathGranted === k;
+        const eff = effectiveRank(base, isPathSkill);
         const attrKey = SKILL_ATTR[k];
         const attrVal = stats[attrKey] ?? 0;
-        const checkValue = eff + attrVal;
-        return [k, { base, effective: eff, attribute: attrKey, attributeValue: attrVal, checkValue }];
+        return [k, {
+          base,
+          effective: eff,
+          attribute: attrKey,
+          attributeValue: attrVal,
+          final: eff + attrVal,
+        }];
       })
     );
+  }, [valuesOnly]);
 
-    return {
-      keyTalent: keyTalent(ancestry, path),
-      defenses: {
-        physical: 10 + str + spd,
-        cognitive: 10 + int + wil,
-        spiritual: 10 + awa + pre,
+  // JSON export payload
+  const exportPayload = useMemo(
+    () => ({
+      ...valuesOnly,
+      derived: {
+        skillsFinal: derivedSkills,
+        _note: "final = effectiveRank + governingAttribute; effective applies Path floor of 1 if applicable",
       },
-      capacities: {
-        lifting: liftingCapacity(str),
-        carrying: carryingCapacity(str),
-      },
-      movement: {
-        rateFtPerAction: movementRate(spd),
-        recoveryDie: recoveryDie(wil),
-      },
-      senses: {
-        range: sensesRange(awa),
-      },
-      skills: effectiveSkillRanks,
-    };
-  }, [ancestry, path, stats, skillRanks]);
+      _exportedAt: new Date().toISOString(),
+    }),
+    [valuesOnly, derivedSkills]
+  );
 
-  const storeJson = useMemo(() => JSON.stringify(storeSnapshot, null, 2), [storeSnapshot]);
-  const derivedJson = useMemo(() => JSON.stringify(derivedSnapshot, null, 2), [derivedSnapshot]);
+  const json = useMemo(() => JSON.stringify(exportPayload, null, 2), [exportPayload]);
 
-  const copy = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      // optionally: toast
-    } catch {
-      // ignore
-    }
+  const copyJson = async () => {
+    try { await navigator.clipboard.writeText(json); } catch {}
   };
 
-  const download = (filename: string, text: string) => {
-    const blob = new Blob([text], { type: "application/json;charset=utf-8" });
+  const downloadJson = () => {
+    const blob = new Blob([json], { type: "application/json;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = filename;
+    a.download = "character-export.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadFantasyGroundsXml = () => {
+    const xml = buildFantasyGroundsXml(valuesOnly);
+    const blob = new Blob([xml], { type: "application/xml;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${(valuesOnly.name as string) || "character"}_FG.xml`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -175,60 +341,36 @@ export default function ExportPage() {
     <div className="mx-auto max-w-5xl">
       <h1 className="mb-2 text-2xl font-bold">Export</h1>
       <p className="mb-6 text-sm text-gray-600">
-        Temporary debug panel showing the full CharacterStore snapshot and a derived summary.
+        Live snapshot of everything in <code>CharacterStore</code>, plus a Fantasy Grounds export.
       </p>
 
-      {/* Raw store snapshot */}
-      <section className="mb-8">
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Store Snapshot (values only)</h2>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              className="rounded-lg border px-3 py-1 text-sm hover:bg-gray-50"
-              onClick={() => copy(storeJson)}
-            >
-              Copy JSON
-            </button>
-            <button
-              type="button"
-              className="rounded-lg border px-3 py-1 text-sm hover:bg-gray-50"
-              onClick={() => download("character-store.json", storeJson)}
-            >
-              Download JSON
-            </button>
-          </div>
-        </div>
-        <pre className="overflow-auto rounded-lg border bg-gray-50 p-3 text-xs leading-5">
-{storeJson}
-        </pre>
-      </section>
+      <div className="mb-4 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={copyJson}
+          className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50"
+        >
+          Copy JSON
+        </button>
+        <button
+          type="button"
+          onClick={downloadJson}
+          className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50"
+        >
+          Download JSON
+        </button>
+        <button
+          type="button"
+          onClick={downloadFantasyGroundsXml}
+          className="rounded-lg bg-gray-900 px-3 py-2 text-sm text-white hover:opacity-90"
+        >
+          Download Fantasy Grounds XML
+        </button>
+      </div>
 
-      {/* Derived snapshot */}
-      <section className="mb-8">
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Derived Snapshot</h2>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              className="rounded-lg border px-3 py-1 text-sm hover:bg-gray-50"
-              onClick={() => copy(derivedJson)}
-            >
-              Copy JSON
-            </button>
-            <button
-              type="button"
-              className="rounded-lg border px-3 py-1 text-sm hover:bg-gray-50"
-              onClick={() => download("character-derived.json", derivedJson)}
-            >
-              Download JSON
-            </button>
-          </div>
-        </div>
-        <pre className="overflow-auto rounded-lg border bg-gray-50 p-3 text-xs leading-5">
-{derivedJson}
-        </pre>
-      </section>
+      <pre className="overflow-auto rounded-lg border bg-gray-50 p-3 text-xs leading-5">
+{json}
+      </pre>
     </div>
   );
 }

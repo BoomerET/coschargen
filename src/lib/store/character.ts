@@ -133,6 +133,28 @@ export function getEffectiveSkillRank(state: CharacterState, key: SkillKey): num
   return Math.min(5, Math.max(base, isPathSkill ? 1 : 0));
 }
 
+// Returns the skill granted by the current Path (works for Humans and Singers alike)
+export function getPathGrantedSkill(state: CharacterState): SkillKey | null {
+  const p = state.path;
+  return p ? PATH_GRANTED_SKILL[p] : null;
+}
+
+// Creation cost: the first rank of the path-granted skill is free.
+// Base is 0..2 during creation.
+//  - If key === pathGranted: cost(base=0|1)=0, cost(base=2)=1
+//  - Else: cost(base)=base
+export function creationSkillCost(state: CharacterState, key: SkillKey, base: number): number {
+  const granted = getPathGrantedSkill(state);
+  if (granted === key) return Math.max(0, base - 1);
+  return base;
+}
+
+export function totalCreationSkillPoints(state: CharacterState): number {
+  return (Object.entries(state.skillRanks) as [SkillKey, number][])
+    .reduce((sum, [k, v]) => sum + creationSkillCost(state, k, v), 0);
+}
+
+
 // ───────────────────────────────────────────────────────────────────────────────
 // Store shape
 // ───────────────────────────────────────────────────────────────────────────────
@@ -322,25 +344,34 @@ export const useCharacterStore = create<CharacterState>()(
       clearExpertises: () => set({ culturalExpertises: [], generalExpertises: [] }),
 
       // ── Skills ──
+
+
       setSkillRank: (key, raw) =>
-        set((state) => {
-          const current = state.skillRanks[key] ?? 0;
-          // clamp requested to 0..2 (creation cap)
-          let desired = Math.max(0, Math.min(2, Math.floor(raw)));
+  set((state) => {
+    const desiredBase = Math.max(0, Math.min(2, Math.floor(raw)));
+    const currentBase = state.skillRanks[key] ?? 0;
 
-          // points spent on other skills
-          const spentWithoutThis = (Object.entries(state.skillRanks) as [SkillKey, number][])
-            .filter(([k]) => k !== key)
-            .reduce((s, [, v]) => s + v, 0);
-          const remaining = state.skillPointsTotal - spentWithoutThis;
+    // Points spent on other skills, using creationSkillCost
+    const spentWithoutThis = (Object.entries(state.skillRanks) as [SkillKey, number][])
+      .filter(([k]) => k !== key)
+      .reduce((s, [k, v]) => s + creationSkillCost(state, k, v), 0);
 
-          // You can raise this skill by at most `remaining`
-          const capForThis = Math.min(2, current + Math.max(0, remaining));
-          const final = Math.max(0, Math.min(desired, capForThis));
+    const remaining = state.skillPointsTotal - spentWithoutThis;
 
-          if (final === current) return {};
-          return { skillRanks: { ...state.skillRanks, [key]: final } };
-        }),
+    // Find the highest base ≤ desiredBase that fits in the remaining budget
+    let finalBase = currentBase;
+    for (let candidate = desiredBase; candidate >= 0; candidate--) {
+      const candCost = creationSkillCost(state, key, candidate);
+      const currCost  = creationSkillCost(state, key, currentBase);
+      if (candCost <= currCost + Math.max(0, remaining)) {
+        finalBase = candidate;
+        break;
+      }
+    }
+    if (finalBase === currentBase) return {};
+    return { skillRanks: { ...state.skillRanks, [key]: finalBase } };
+  }),
+
 
       resetSkills: () => set({ skillRanks: { ...ZERO_SKILLS } }),
 
