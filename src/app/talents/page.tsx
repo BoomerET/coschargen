@@ -69,26 +69,47 @@ function humanAdditionalTalentOptions(
         ...otherPathKeyTalents("Envoy"), // any OTHER path’s Key Talent
       ] as const;
     }
-  //if (path === "Agent" && focus === "Investigator") {
-  //  return [
-  //    "Watchful Eye",
-  //    "Get Em Talking",
-  //    ...otherPathKeyTalents("Agent"), // any OTHER path’s Key Talent
-  //  ] as const;
-  //} else if (path === "Agent" && focus === "Spy") {
-  //  return [
-  //    "Sure Outcome",
-  //    "Plausible Excuse",
-  //    ...otherPathKeyTalents("Agent"), // any OTHER path’s Key Talent
-  //  ] as const;
-  //} else if (path === "Agent" && focus === "Thief") {
-  //  return [
-  //    "Risky Behavior",
-  //    "Cheap Shot",
-  //    ...otherPathKeyTalents("Agent"), // any OTHER path’s Key Talent
-  //  ] as const;
-  //}
-
+  } else if (path === "Hunter") {
+    if (focus === "Archer") {
+      return [
+        "Tagging Shot",
+        "Combat Training",
+        ...otherPathKeyTalents("Hunter"), // any OTHER path’s Key Talent
+      ] as const;
+    } else if (focus === "Assassin") {
+      return [
+        "Startling Blow",
+        "Killing Edge",
+        ...otherPathKeyTalents("Hunter"), // any OTHER path’s Key Talent
+      ] as const;
+    } else if (focus === "Tracker") {
+      return [
+        "Deadly Trap",
+        "Animal Bond",
+        ...otherPathKeyTalents("Hunter"), // any OTHER path’s Key Talent
+      ] as const;
+    }
+  } else if (path === "Leader") {
+    if (focus === "Champion") {
+      return [
+        "Combat Coordination",
+        "Valiant Intervention",
+        ...otherPathKeyTalents("Leader"), // any OTHER path’s Key Talent
+      ] as const;
+    } else if (focus === "Officer") {
+      return [
+        "Composed",
+        "Through the Fray",
+        ...otherPathKeyTalents("Leader"), // any OTHER path’s Key Talent
+      ] as const;
+    } else if (focus === "Politico") {
+      return [
+        "Cutthroat Tactics",
+        "Tactical Ploy",
+        ...otherPathKeyTalents("Leader"), // any OTHER path’s Key Talent
+      ] as const;
+    }
+  }
   // TODO: Add rules for other path/specialty combos here as you define them.
   return [] as const;
 }
