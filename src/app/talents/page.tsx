@@ -29,25 +29,65 @@ function humanAdditionalTalentOptions(
   focus: Exclude<PathFocus, ""> | ""
 ): readonly string[] {
   // Rule 1: Agent → Investigator
-  if (path === "Agent" && focus === "Investigator") {
-    return [
-      "Watchful Eye",
-      "Get Em Talking",
-      ...otherPathKeyTalents("Agent"), // any OTHER path’s Key Talent
-    ] as const;
-  } else if (path === "Agent" && focus === "Spy") {
-    return [
-      "Sure Outcome",
-      "Plausible Excuse",
-      ...otherPathKeyTalents("Agent"), // any OTHER path’s Key Talent
-    ] as const;
-  } else if (path === "Agent" && focus === "Thief") {
-    return [
-      "Risky Behavior",
-      "Cheap Shot",
-      ...otherPathKeyTalents("Agent"), // any OTHER path’s Key Talent
-    ] as const;
-  }
+  if (path === "Agent") {
+    if (focus === "Investigator") {
+      return [
+        "Watchful Eye",
+        "Get Em Talking",
+        ...otherPathKeyTalents("Agent"), // any OTHER path’s Key Talent
+      ] as const;
+    } else if (focus === "Spy") {
+      return [
+        "Sure Outcome",
+        "Plausible Excuse",
+        ...otherPathKeyTalents("Agent"), // any OTHER path’s Key Talent
+      ] as const;
+    } else if (focus === "Thief") {
+      return [
+        "Risky Behavior",
+        "Cheap Shot",
+        ...otherPathKeyTalents("Agent"), // any OTHER path’s Key Talent
+      ] as const;
+    }
+  } else if (path === "Envoy") {
+    if (focus === "Diplomat") {
+      return [
+        "Steadfast Challenge",
+        "Collected",
+        ...otherPathKeyTalents("Envoy"), // any OTHER path’s Key Talent
+      ] as const;
+    } else if (focus === "Faithful") {
+      return [
+        "Customary Garb",
+        "Galvanize",
+        ...otherPathKeyTalents("Envoy"), // any OTHER path’s Key Talent
+      ] as const;
+    } else if (focus === "Mentor") {
+      return [
+        "Sound Advice",
+        "Practical Demonstration",
+        ...otherPathKeyTalents("Envoy"), // any OTHER path’s Key Talent
+      ] as const;
+    }
+  //if (path === "Agent" && focus === "Investigator") {
+  //  return [
+  //    "Watchful Eye",
+  //    "Get Em Talking",
+  //    ...otherPathKeyTalents("Agent"), // any OTHER path’s Key Talent
+  //  ] as const;
+  //} else if (path === "Agent" && focus === "Spy") {
+  //  return [
+  //    "Sure Outcome",
+  //    "Plausible Excuse",
+  //    ...otherPathKeyTalents("Agent"), // any OTHER path’s Key Talent
+  //  ] as const;
+  //} else if (path === "Agent" && focus === "Thief") {
+  //  return [
+  //    "Risky Behavior",
+  //    "Cheap Shot",
+  //    ...otherPathKeyTalents("Agent"), // any OTHER path’s Key Talent
+  //  ] as const;
+  //}
 
   // TODO: Add rules for other path/specialty combos here as you define them.
   return [] as const;
