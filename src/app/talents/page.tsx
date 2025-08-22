@@ -95,9 +95,6 @@ export default function TalentsPage() {
                 <Wand2 className="h-5 w-5 text-gray-500" aria-hidden />
               </div>
               <div className="text-2xl font-semibold">Change Form</div>
-              <p className="mt-2 text-xs text-gray-500">
-                Singers always gain <em>Change Form</em> as an additional Talent.
-              </p>
             </section>
           )}
 

@@ -1,8 +1,7 @@
 // src/lib/store/character.ts
 // Fully typed Zustand store for Cosmere Character Generator (no `any` casts).
-// Covers: Basics, Stats, Expertises (Cultural + Additional), Skills with creation budget,
-// Path Focus, and migrations.
-
+// Includes: Basics, Stats, Expertises (Cultural + Additional), Skills (creation budget),
+// Path Focus, Selected Path Talent (Human-only), derived helpers, and migrations.
 
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
@@ -98,16 +97,7 @@ export const SKILL_ATTR: Record<SkillKey, StatKey> = {
   Thievery: "SPD",
 };
 
-export const PATH_GRANTED_SKILL: Record<Exclude<Path, "">, SkillKey> = {
-  Agent: "Insight",
-  Envoy: "Discipline",
-  Hunter: "Perception",
-  Leader: "Leadership",
-  Scholar: "Lore",
-  Warrior: "Athletics",
-};
-
-// near your other exports
+// Key talent comes from Path (for both ancestries)
 export type PathKeyTalent =
   | "Opportunist"
   | "Rousing Presence"
@@ -125,6 +115,15 @@ export const PATH_KEY_TALENT: Record<Exclude<Path, "">, PathKeyTalent> = {
   Warrior: "Vigilant Stance",
 };
 
+// Path-granted skill floor (min 1 effective rank)
+export const PATH_GRANTED_SKILL: Record<Exclude<Path, "">, SkillKey> = {
+  Agent: "Insight",
+  Envoy: "Discipline",
+  Hunter: "Perception",
+  Leader: "Leadership",
+  Scholar: "Lore",
+  Warrior: "Athletics",
+};
 
 // Helper: Effective skill rank (applies Path floor of 1)
 export function getEffectiveSkillRank(state: CharacterState, key: SkillKey): number {
@@ -151,12 +150,16 @@ export type CharacterState = {
   totalStatPoints: number;
 
   // Expertises
-  culturalExpertises: CulturalExpertise[]; // choose at least 2
+  culturalExpertises: CulturalExpertise[]; // pick at least 2
   generalExpertises: AnyExpertise[];       // up to INT, requires 2 Cultural first
 
   // Skills (creation budget: 4 points, cap 2 per skill)
-  skillRanks: SkillRanks; // base ranks you assign (0..2 during creation)
+  skillRanks: SkillRanks; // base ranks (0..2 during creation)
   skillPointsTotal: number;
+
+  // Talents
+  selectedPathTalent: string;             // Human-only additional pick
+  setSelectedPathTalent: (t: string) => void;
 
   // Setters — basics
   setName: (v: string) => void;
@@ -179,17 +182,13 @@ export type CharacterState = {
   setSkillRank: (key: SkillKey, v: number) => void;
   resetSkills: () => void;
 
-  // Setters - Talents
-  selectedPathTalent: string; 
-  setSelectedPathTalent: (t: string) => void;
-
   // Global reset
   reset: () => void;
 };
 
 export const useCharacterStore = create<CharacterState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       // Basics
       name: "",
       ancestry: "",
@@ -217,17 +216,13 @@ export const useCharacterStore = create<CharacterState>()(
       setName: (v) => set({ name: v }),
       setAncestry: (v) => set({ ancestry: v, selectedPathTalent: "" }),
       setPath: (v) =>
-        set((state) => ({
-          // When changing Path, clear focus; do not mutate skills (Path bonus is derived).
-          //return { path: v, pathFocus: "" };
+        set(() => ({
           path: v,
           pathFocus: "",
-          selectedPathTalent: "",
+          selectedPathTalent: "", // clear human pick when path changes
         })),
       setPathFocus: (v) => set({ pathFocus: v }),
       setLevel: (lvl) => set({ level: Math.max(1, Math.min(21, Math.floor(lvl))) }),
-      setAncestry: (v) => set({ ancestry: v, selectedPathTalent: "" }),
-
 
       // ── Stats setters ──
       setStat: (key, raw) =>
@@ -317,7 +312,6 @@ export const useCharacterStore = create<CharacterState>()(
 
           // Must have at least 2 Cultural before any Additional
           if (state.culturalExpertises.length < 2) return {};
-
           if (inCultural) return {};             // no duplicates with Cultural
           if (state.generalExpertises.length >= intCap) return {}; // cap to INT
 
@@ -331,7 +325,7 @@ export const useCharacterStore = create<CharacterState>()(
         set((state) => {
           const current = state.skillRanks[key] ?? 0;
           // clamp requested to 0..2 (creation cap)
-          const desired = Math.max(0, Math.min(2, Math.floor(raw)));
+          let desired = Math.max(0, Math.min(2, Math.floor(raw)));
 
           // points spent on other skills
           const spentWithoutThis = (Object.entries(state.skillRanks) as [SkillKey, number][])
@@ -361,25 +355,53 @@ export const useCharacterStore = create<CharacterState>()(
           culturalExpertises: [],
           generalExpertises: [],
           skillRanks: { ...ZERO_SKILLS },
+          selectedPathTalent: "",
         }),
     }),
     {
       name: "ccg-character",
       storage: createJSONStorage(() => localStorage),
+      version: 9, // bump if your project already used earlier versions
       migrate: (state: unknown, version: number) => {
-        // carefully coerce unknown to partial shape
-        const s = (state as Partial<CharacterState> & {
-          totalStatPoints?: number;
-          culturalExpertises?: CulturalExpertise[];
-          generalExpertises?: AnyExpertise[];
-          skillRanks?: SkillRanks;
-          skillPointsTotal?: number;
-        }) ?? {};
-        // v8: ensure arrays exist
-        if (!Array.isArray(s.culturalExpertises)) s.culturalExpertises = [];
-        if (!Array.isArray(s.generalExpertises)) s.generalExpertises = [];
+        const prev = (state as Partial<CharacterState>) || {};
+        const next: Partial<CharacterState> = { ...prev };
 
-        return s as CharacterState;
+        // v2: stats + total
+        if (version < 2) {
+          next.stats = { ...ZERO_STATS };
+          next.totalStatPoints = 12;
+        }
+        // v3: level
+        if (version < 3 && next.level === undefined) {
+          next.level = 1;
+        }
+        // v4: pathFocus
+        if (version < 4 && next.pathFocus === undefined) {
+          next.pathFocus = "";
+        }
+        // v5: expertises arrays
+        if (version < 5) {
+          if (!Array.isArray(next.culturalExpertises)) next.culturalExpertises = [];
+          if (!Array.isArray(next.generalExpertises)) next.generalExpertises = [];
+        }
+        // v6: skillRanks
+        if (version < 6 && !next.skillRanks) {
+          next.skillRanks = { ...ZERO_SKILLS };
+        }
+        // v7: skillPointsTotal
+        if (version < 7 && next.skillPointsTotal === undefined) {
+          next.skillPointsTotal = 4;
+        }
+        // v9: selectedPathTalent
+        if (version < 9 && next.selectedPathTalent === undefined) {
+          next.selectedPathTalent = "";
+        }
+
+        // Ensure arrays exist
+        if (!Array.isArray(next.culturalExpertises)) next.culturalExpertises = [];
+        if (!Array.isArray(next.generalExpertises)) next.generalExpertises = [];
+
+        return next as CharacterState;
       },
     }
   )
