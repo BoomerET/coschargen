@@ -109,6 +109,46 @@ function humanAdditionalTalentOptions(
         ...otherPathKeyTalents("Leader"), // any OTHER path’s Key Talent
       ] as const;
     }
+  } else if (path === "Scholar") {
+    if (focus === "Artifabrian") {
+      return [
+        "Efficient Engineer",
+        "Prized Acquisition",
+        ...otherPathKeyTalents("Scholar"), // any OTHER path’s Key Talent
+      ] as const;
+    } else if (focus === "Strategist") {
+      return [
+        "Strategize",
+        "Mind and Body",
+        ...otherPathKeyTalents("Scholar"), // any OTHER path’s Key Talent
+      ] as const;
+    } else if (focus === "Surgeon") {
+      return [
+        "Field Medicine",
+        "Emotional Intelligence",
+        ...otherPathKeyTalents("Scholar"), // any OTHER path’s Key Talent
+      ] as const;
+    }
+  } else if (path === "Warrior") {
+    if (focus === "Duelist") {
+      return [
+        "Practiced Kata",
+        "Flamestance",
+        ...otherPathKeyTalents("Warrior"), // any OTHER path’s Key Talent
+      ] as const;
+    } else if (focus === "Shardbearer") {
+      return [
+        "Shard Training",
+        "Stonestance",
+        ...otherPathKeyTalents("Warrior"), // any OTHER path’s Key Talent
+      ] as const;
+    } else if (focus === "Soldier") {
+      return [
+        "Cautious Advance",
+        "Combat Training",
+        ...otherPathKeyTalents("Warrior"), // any OTHER path’s Key Talent
+      ] as const;
+    }
   }
   // TODO: Add rules for other path/specialty combos here as you define them.
   return [] as const;
