@@ -15,7 +15,7 @@ export default function RootLayout({
 }) {
   return (
     <>
-      <html lang="en" className="h-full" supresshydrationwarning="true">
+      <html lang="en" className="h-full">
         <head />
         <body className="min-h-[100dvh] bg-white text-gray-900 antialiased">
           <div className="flex min-h-[100dvh]">

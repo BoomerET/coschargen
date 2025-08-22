@@ -105,14 +105,8 @@ export default function SkillsPage() {
             <div key={k} className="rounded-xl border p-4">
               <div className="mb-2 flex items-center justify-between">
                 <div className="text-sm font-medium text-gray-800">{k}</div>
-                <span className="rounded-md border bg-gray-50 px-2 py-0.5 text-xs text-gray-600">
-                  {attrKey}
-                </span>
               </div>
 
-              <label htmlFor={`skill-${k}`} className="mb-1 block text-xs text-gray-600">
-                {isPathSkill ? "Rank (Path minimum applies)" : "Base Rank (0–2 during creation)"}
-              </label>
               <input
                 id={`skill-${k}`}
                 type="number"
@@ -135,39 +129,27 @@ export default function SkillsPage() {
                 aria-describedby={`hint-${k}`}
               />
 
-              <p id={`hint-${k}`} className="mt-1 text-xs text-gray-500">
-                {isPathSkill
-                  ? `Allowed now: ${inputMin}–${inputMax} (1 is your free Path rank; increase to 2 to improve).`
-                  : `Allowed now: 0–${inputMax}.`}
-              </p>
-
               <div className="mt-3 grid grid-cols-3 items-end gap-2">
                 <div>
-                  <div className="text-xs text-gray-500">Effective Rank</div>
+                  <div className="text-xs text-gray-500">Rank</div>
                   <div className="mt-1 rounded-full bg-gray-900 px-3 py-1 text-center text-sm font-semibold text-white">
                     {effective}
                   </div>
                 </div>
                 <div>
-                  <div className="text-xs text-gray-500">{attrKey} (Attr)</div>
+                  <div className="text-xs text-gray-500">{attrKey}</div>
                   <div className="mt-1 rounded-full border px-3 py-1 text-center text-sm font-semibold">
                     {attrVal}
                   </div>
                 </div>
                 <div>
-                  <div className="text-xs text-gray-500">Check Value</div>
+                  <div className="text-xs text-gray-500">Final</div>
                   <div className="mt-1 rounded-full border px-3 py-1 text-center text-sm font-semibold">
                     {checkValue}
                   </div>
                 </div>
               </div>
 
-              {isPathSkill && (
-                <p className="mt-2 text-xs text-gray-500">
-                  Your Path grants a free rank of 1. Spending 1 point here has no effect;
-                  set it to 2 to improve the skill.
-                </p>
-              )}
             </div>
           );
         })}
