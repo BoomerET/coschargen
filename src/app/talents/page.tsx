@@ -198,13 +198,10 @@ export default function TalentsPage() {
           {/* Key Talent (from Path) */}
           <section className="mb-6 rounded-xl border p-4">
             <div className="mb-2 flex items-center justify-between">
-              <div className="text-sm text-gray-600">Key Talent (from Path)</div>
+              <div className="text-sm text-gray-600">Key Talent</div>
               <Sparkles className="h-5 w-5 text-gray-500" aria-hidden />
             </div>
             <div className="text-2xl font-semibold">{keyTalent ?? "—"}</div>
-            <p className="mt-2 text-xs text-gray-500">
-              Path: {path}. Ancestry: {ancestry}.
-            </p>
           </section>
 
           {/* Singer: fixed additional Talent */}
@@ -215,9 +212,6 @@ export default function TalentsPage() {
                 <Wand2 className="h-5 w-5 text-gray-500" aria-hidden />
               </div>
               <div className="text-2xl font-semibold">Change Form</div>
-              <p className="mt-2 text-xs text-gray-500">
-                Singers always gain <em>Change Form</em> in addition to their Key Talent.
-              </p>
             </section>
           )}
 
@@ -267,27 +261,11 @@ export default function TalentsPage() {
                 </div>
               )}
 
-              {selectedPathTalent && (
-                <p className="mt-2 text-xs text-gray-500">
-                  Chosen: <em>{selectedPathTalent}</em>
-                </p>
-              )}
             </section>
           )}
         </>
       )}
 
-      <div className="mt-6 flex items-center gap-3">
-        <Link href="/skills" className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50">
-          ← Back to Skills
-        </Link>
-        <Link
-          href="/surges"
-          className="ml-auto rounded-lg bg-gray-900 px-3 py-2 text-sm text-white hover:opacity-90"
-        >
-          Continue to Surges →
-        </Link>
-      </div>
     </div>
   );
 }
