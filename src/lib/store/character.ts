@@ -138,7 +138,7 @@ export function getEffectiveSkillRank(state: CharacterState, key: SkillKey): num
 // Store shape
 // ───────────────────────────────────────────────────────────────────────────────
 
-type CharacterState = {
+export type CharacterState = {
   // Basics
   name: string;
   ancestry: Ancestry;
@@ -183,7 +183,6 @@ type CharacterState = {
   selectedPathTalent: string; 
   setSelectedPathTalent: (t: string) => void;
 
-
   // Global reset
   reset: () => void;
 };
@@ -210,6 +209,10 @@ export const useCharacterStore = create<CharacterState>()(
       skillRanks: { ...ZERO_SKILLS },
       skillPointsTotal: 4,
 
+      // Talents
+      selectedPathTalent: "",
+      setSelectedPathTalent: (t) => set({ selectedPathTalent: t }),
+
       // ── Basics setters ──
       setName: (v) => set({ name: v }),
       setAncestry: (v) => set({ ancestry: v, selectedPathTalent: "" }),
@@ -223,6 +226,8 @@ export const useCharacterStore = create<CharacterState>()(
         })),
       setPathFocus: (v) => set({ pathFocus: v }),
       setLevel: (lvl) => set({ level: Math.max(1, Math.min(21, Math.floor(lvl))) }),
+      setAncestry: (v) => set({ ancestry: v, selectedPathTalent: "" }),
+
 
       // ── Stats setters ──
       setStat: (key, raw) =>

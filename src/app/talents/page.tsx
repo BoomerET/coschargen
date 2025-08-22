@@ -139,12 +139,6 @@ export default function TalentsPage() {
                   </select>
                 </div>
               )}
-
-              {selectedPathTalent && (
-                <p className="mt-2 text-xs text-gray-500">
-                  Chosen: <em>{selectedPathTalent}</em>
-                </p>
-              )}
             </section>
           )}
         </>
