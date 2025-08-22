@@ -28,9 +28,24 @@ const FG_STAT_LABEL: Record<StatKey, string> = {
 };
 
 const SKILLS: SkillKey[] = [
-  "Agility","Athletics","Crafting","Deception","Deduction","Discipline",
-  "Heavy Weaponry","Insight","Intimidation","Leadership","Light Weaponry",
-  "Lore","Medicine","Perception","Persuasion","Stealth","Survival","Thievery",
+  "Agility",
+  "Athletics",
+  "Crafting",
+  "Deception",
+  "Deduction",
+  "Discipline",
+  "Heavy Weaponry",
+  "Insight",
+  "Intimidation",
+  "Leadership",
+  "Light Weaponry",
+  "Lore",
+  "Medicine",
+  "Perception",
+  "Persuasion",
+  "Stealth",
+  "Survival",
+  "Thievery",
 ];
 
 // ───────────────────────────────────────────────────────────────────────────────
@@ -46,7 +61,9 @@ function movementRate(spd: number): number {
   if (s <= 8) return 60;
   return 80;
 }
-function recoveryDie(wil: number): "1d4"|"1d6"|"1d8"|"1d10"|"1d12"|"1d0" {
+function recoveryDie(
+  wil: number
+): "1d4" | "1d6" | "1d8" | "1d10" | "1d12" | "1d0" {
   const w = Math.max(0, Math.floor(wil));
   if (w === 0) return "1d4";
   if (w <= 2) return "1d6";
@@ -86,7 +103,7 @@ function xmlEscape(s: string): string {
 
 // Turn "1d8" -> "d8" for <recdie type="dice">d8</recdie>
 function asFgDie(die: string): string {
-  return die.startsWith("1d") ? ("d" + die.slice(2)) : die.replace(/^1/, "");
+  return die.startsWith("1d") ? "d" + die.slice(2) : die.replace(/^1/, "");
 }
 
 // ───────────────────────────────────────────────────────────────────────────────
@@ -100,15 +117,21 @@ function buildFantasyGroundsXml(allValues: Record<string, unknown>) {
   const path = (allValues.path as Path) || "";
   const pathFocus = (allValues.pathFocus as PathFocus) || "";
   const stats = (allValues.stats as Record<StatKey, number>) || {
-    STR: 0, SPD: 0, INT: 0, WIL: 0, AWA: 0, PRE: 0,
+    STR: 0,
+    SPD: 0,
+    INT: 0,
+    WIL: 0,
+    AWA: 0,
+    PRE: 0,
   };
   const skillRanks = (allValues.skillRanks as Record<SkillKey, number>) || {};
   const cultural = (allValues.culturalExpertises as string[]) || [];
   const additional = (allValues.generalExpertises as string[]) || [];
   const selectedPathTalent = (allValues.selectedPathTalent as string) || "";
 
-  const keyTalent =
-    path ? PATH_KEY_TALENT[path as Exclude<Path, "">] : undefined;
+  const keyTalent = path
+    ? PATH_KEY_TALENT[path as Exclude<Path, "">]
+    : undefined;
 
   // Singer extra talent handled in the Talents page; here we strictly export saved/derived fields
   const derivedDef = defenses(stats);
@@ -117,7 +140,9 @@ function buildFantasyGroundsXml(allValues: Record<string, unknown>) {
   const senses = sensesRange(stats.AWA ?? 0);
 
   // Which skill gets the Path floor of 1?
-  const pathGrantedSkill = path ? PATH_GRANTED_SKILL[path as Exclude<Path, "">] : undefined;
+  const pathGrantedSkill = path
+    ? PATH_GRANTED_SKILL[path as Exclude<Path, "">]
+    : undefined;
 
   // Build <skilllist> entries
   let skillListXml = "";
@@ -154,7 +179,7 @@ function buildFantasyGroundsXml(allValues: Record<string, unknown>) {
       </id-${id}>`;
   });
 
-    // Build <talent> — include Path Key Talent, Singer's Change Form, and Human extra pick
+  // Build <talent> — include Path Key Talent, Singer's Change Form, and Human extra pick
   const talentItems: Array<{
     name: string;
     source?: string;
@@ -196,27 +221,39 @@ function buildFantasyGroundsXml(allValues: Record<string, unknown>) {
     const id = String(i + 1).padStart(5, "0");
     talentXml += `
       <id-${id}>
-        <activation type="string">${xmlEscape(t.activation ?? "[*]")}</activation>
+        <activation type="string">${xmlEscape(
+          t.activation ?? "[*]"
+        )}</activation>
         <name type="string">${xmlEscape(t.name)}</name>
-        ${t.source ? `<source type="string">${xmlEscape(t.source)}</source>` : ""}
-        ${t.specialty ? `<specialty type="string">${xmlEscape(t.specialty)}</specialty>` : ""}
+        ${
+          t.source
+            ? `<source type="string">${xmlEscape(t.source)}</source>`
+            : ""
+        }
+        ${
+          t.specialty
+            ? `<specialty type="string">${xmlEscape(t.specialty)}</specialty>`
+            : ""
+        }
       </id-${id}>`;
   });
 
-
   // Character <path> line like "Agent(Thief)"
-  const pathLine =
-    path ? `${path}${pathFocus ? `(${pathFocus})` : ""}` : "";
+  const pathLine = path ? `${path}${pathFocus ? `(${pathFocus})` : ""}` : "";
 
   // XML payload
   const xml = `<?xml version="1.0" encoding="utf-8"?>
 <root version="4.8" dataversion="20241002" release="8.1|CoreRPG:7">
   <character>
     <name type="string">${xmlEscape(name)}</name>
-    ${ancestry ? `
+    ${
+      ancestry
+        ? `
     <ancestry>
       <name type="string">${xmlEscape(ancestry)}</name>
-    </ancestry>` : ""}
+    </ancestry>`
+        : ""
+    }
 
     <level type="number">${level}</level>
     ${pathLine ? `<path type="string">${xmlEscape(pathLine)}</path>` : ""}
@@ -231,20 +268,34 @@ function buildFantasyGroundsXml(allValues: Record<string, unknown>) {
     </attributes>
 
     <defenses>
-      <cognitivedefense><score type="number">${derivedDef.cognitive}</score></cognitivedefense>
-      <physicaldefense><score type="number">${derivedDef.physical}</score></physicaldefense>
-      <spiritualdefense><score type="number">${derivedDef.spiritual}</score></spiritualdefense>
+      <cognitivedefense><score type="number">${
+        derivedDef.cognitive
+      }</score></cognitivedefense>
+      <physicaldefense><score type="number">${
+        derivedDef.physical
+      }</score></physicaldefense>
+      <spiritualdefense><score type="number">${
+        derivedDef.spiritual
+      }</score></spiritualdefense>
     </defenses>
 
     <movement type="number">${move}</movement>
     <recdie type="dice">${recDie}</recdie>
     <senses type="string">${xmlEscape(senses)}</senses>
 
-    ${expertiseXml ? `<expertise>${expertiseXml}
-    </expertise>` : ""}
+    ${
+      expertiseXml
+        ? `<expertise>${expertiseXml}
+    </expertise>`
+        : ""
+    }
 
-    ${talentXml ? `<talent>${talentXml}
-    </talent>` : ""}
+    ${
+      talentXml
+        ? `<talent>${talentXml}
+    </talent>`
+        : ""
+    }
 
     <skilllist>${skillListXml}
     </skilllist>
@@ -274,10 +325,14 @@ export default function ExportPage() {
   const derivedSkills = useMemo(() => {
     const stats = valuesOnly.stats as Record<StatKey, number> | undefined;
     const path = valuesOnly.path as Path | undefined;
-    const skillRanks = valuesOnly.skillRanks as Record<SkillKey, number> | undefined;
+    const skillRanks = valuesOnly.skillRanks as
+      | Record<SkillKey, number>
+      | undefined;
     if (!stats || !skillRanks) return {};
 
-    const pathGranted = path ? PATH_GRANTED_SKILL[path as Exclude<Path, "">] : undefined;
+    const pathGranted = path
+      ? PATH_GRANTED_SKILL[path as Exclude<Path, "">]
+      : undefined;
 
     return Object.fromEntries(
       SKILLS.map((k) => {
@@ -286,13 +341,16 @@ export default function ExportPage() {
         const eff = effectiveRank(base, isPathSkill);
         const attrKey = SKILL_ATTR[k];
         const attrVal = stats[attrKey] ?? 0;
-        return [k, {
-          base,
-          effective: eff,
-          attribute: attrKey,
-          attributeValue: attrVal,
-          final: eff + attrVal,
-        }];
+        return [
+          k,
+          {
+            base,
+            effective: eff,
+            attribute: attrKey,
+            attributeValue: attrVal,
+            final: eff + attrVal,
+          },
+        ];
       })
     );
   }, [valuesOnly]);
@@ -303,17 +361,23 @@ export default function ExportPage() {
       ...valuesOnly,
       derived: {
         skillsFinal: derivedSkills,
-        _note: "final = effectiveRank + governingAttribute; effective applies Path floor of 1 if applicable",
+        _note:
+          "final = effectiveRank + governingAttribute; effective applies Path floor of 1 if applicable",
       },
       _exportedAt: new Date().toISOString(),
     }),
     [valuesOnly, derivedSkills]
   );
 
-  const json = useMemo(() => JSON.stringify(exportPayload, null, 2), [exportPayload]);
+  const json = useMemo(
+    () => JSON.stringify(exportPayload, null, 2),
+    [exportPayload]
+  );
 
   const copyJson = async () => {
-    try { await navigator.clipboard.writeText(json); } catch {}
+    try {
+      await navigator.clipboard.writeText(json);
+    } catch {}
   };
 
   const downloadJson = () => {
@@ -341,7 +405,8 @@ export default function ExportPage() {
     <div className="mx-auto max-w-5xl">
       <h1 className="mb-2 text-2xl font-bold">Export</h1>
       <p className="mb-6 text-sm text-gray-600">
-        Live snapshot of everything in <code>CharacterStore</code>, plus a Fantasy Grounds export.
+        Live snapshot of everything in <code>CharacterStore</code>, plus a
+        Fantasy Grounds export.
       </p>
 
       <div className="mb-4 flex flex-wrap gap-2">
@@ -369,9 +434,8 @@ export default function ExportPage() {
       </div>
 
       <pre className="overflow-auto rounded-lg border bg-gray-50 p-3 text-xs leading-5">
-{json}
+        {json}
       </pre>
     </div>
   );
 }
-

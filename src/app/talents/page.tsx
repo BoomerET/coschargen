@@ -19,7 +19,10 @@ function keyTalentFromPath(path: Path): PathKeyTalent | null {
 
 // All other paths' key talents (exclude the current path)
 function otherPathKeyTalents(currentPath: Exclude<Path, "">): PathKeyTalent[] {
-  const entries = Object.entries(PATH_KEY_TALENT) as [Exclude<Path, "">, PathKeyTalent][];
+  const entries = Object.entries(PATH_KEY_TALENT) as [
+    Exclude<Path, "">,
+    PathKeyTalent
+  ][];
   return entries.filter(([p]) => p !== currentPath).map(([, t]) => t);
 }
 
@@ -181,16 +184,20 @@ export default function TalentsPage() {
     <div className="mx-auto max-w-3xl">
       <h1 className="mb-2 text-2xl font-bold">Talents</h1>
       <p className="mb-6 text-sm text-gray-600">
-        Your <strong>Key Talent</strong> is determined by your <strong>Path</strong> (Humans & Singers).
-        Singers also gain <strong>Change Form</strong>. Humans select one additional Path Talent once a
-        <strong> Specialty</strong> is chosen.
+        Your <strong>Key Talent</strong> is determined by your{" "}
+        <strong>Path</strong> (Humans & Singers). Singers also gain{" "}
+        <strong>Change Form</strong>. Humans select one additional Path Talent
+        once a<strong> Specialty</strong> is chosen.
       </p>
 
       {!hasBasics ? (
         <div className="rounded-xl border p-4">
           <p className="text-sm text-gray-700">
             Choose your <strong>Ancestry</strong> and <strong>Path</strong> on{" "}
-            <Link href="/basics" className="underline">Basics</Link>, then return here.
+            <Link href="/basics" className="underline">
+              Basics
+            </Link>
+            , then return here.
           </p>
         </div>
       ) : (
@@ -219,14 +226,19 @@ export default function TalentsPage() {
           {isHuman && (
             <section className="mb-6 rounded-xl border p-4">
               <div className="mb-2 flex items-center justify-between">
-                <div className="text-sm text-gray-600">Additional Talent (Human)</div>
+                <div className="text-sm text-gray-600">
+                  Additional Talent (Human)
+                </div>
                 <Wand2 className="h-5 w-5 text-gray-500" aria-hidden />
               </div>
 
               {!pathFocus ? (
                 <p className="text-sm">
                   Choose a <strong>Specialty</strong> on the{" "}
-                  <Link href="/paths" className="underline">Paths</Link> page to unlock this choice.
+                  <Link href="/paths" className="underline">
+                    Paths
+                  </Link>{" "}
+                  page to unlock this choice.
                 </p>
               ) : humanOptions.length === 0 ? (
                 <>
@@ -240,7 +252,10 @@ export default function TalentsPage() {
                 </>
               ) : (
                 <div className="flex items-center gap-3">
-                  <label htmlFor="human-path-talent" className="text-sm text-gray-700">
+                  <label
+                    htmlFor="human-path-talent"
+                    className="text-sm text-gray-700"
+                  >
                     Choose one:
                   </label>
                   <select
@@ -260,13 +275,10 @@ export default function TalentsPage() {
                   </select>
                 </div>
               )}
-
             </section>
           )}
         </>
       )}
-
     </div>
   );
 }
-

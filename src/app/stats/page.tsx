@@ -120,7 +120,6 @@ export default function StatsPage() {
   return (
     <div className="mx-auto max-w-3xl">
       <h1 className="mb-2 text-2xl font-bold">Stats</h1>
-
       {/* Remaining points */}
       <div
         className={[
@@ -142,7 +141,6 @@ export default function StatsPage() {
       >
         Reset all to 0
       </button>
-
       {/* Grid of attributes */}
       <div className="grid gap-4 sm:grid-cols-2">
         {ATTRS.map(({ key, label }) => {
@@ -179,8 +177,11 @@ export default function StatsPage() {
         })}
       </div>
       <section className="mt-8">
-       <p><b>Derived Stats</b></p>
-       <hr /><br />
+        <p>
+          <b>Derived Stats</b>
+        </p>
+        <hr />
+        <br />
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="rounded-xl border p-4">
             <div className="text-sm text-gray-600">Lifting Capacity</div>
