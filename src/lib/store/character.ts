@@ -221,7 +221,8 @@ export const useCharacterStore = create<CharacterState>()(
           pathFocus: "",
           selectedPathTalent: "", // clear human pick when path changes
         })),
-      setPathFocus: (v) => set({ pathFocus: v }),
+      //setPathFocus: (v) => set({ pathFocus: v }),
+      setPathFocus: (v) => set({ pathFocus: v, selectedPathTalent: "" }),
       setLevel: (lvl) => set({ level: Math.max(1, Math.min(21, Math.floor(lvl))) }),
 
       // ── Stats setters ──

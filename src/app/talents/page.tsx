@@ -8,72 +8,76 @@ import {
   PATH_KEY_TALENT,
   type Ancestry,
   type Path,
+  type PathFocus,
   type PathKeyTalent,
 } from "@/lib/store/character";
 
-// ⬇️ Fill these arrays later with the actual Human path talent choices.
-// Right now they're empty; the UI will show a disabled selector until you provide options.
-const PATH_TALENT_OPTIONS: Record<Exclude<Path, "">, readonly string[]> = {
-  Agent: ["Investigator", "Spy", "Thief"],
-  Envoy: ["Diplomat", "Faithful", "Mentor"],
-  Hunter: ["Archer", "Assassin", "Tracker"],
-  Leader: ["Champion", "Officer", "Politico"],
-  Scholar: ["Artifabrian", "Strategist", "Surgeon"],
-  Warrior: ["Duelist", "Shardbearer", "Soldier"],
-};
+// --- Key Talent from Path (both ancestries) ---
+function keyTalentFromPath(path: Path): PathKeyTalent | null {
+  return path ? PATH_KEY_TALENT[path as Exclude<Path, "">] : null;
+}
 
-function computeKeyTalent(path: Path): PathKeyTalent | null {
-  if (!path) return null;
-  return PATH_KEY_TALENT[path as Exclude<Path, "">];
+// All other paths' key talents (exclude the current path)
+function otherPathKeyTalents(currentPath: Exclude<Path, "">): PathKeyTalent[] {
+  const entries = Object.entries(PATH_KEY_TALENT) as [Exclude<Path, "">, PathKeyTalent][];
+  return entries.filter(([p]) => p !== currentPath).map(([, t]) => t);
+}
+
+// Human additional talent options based on Path + Specialty
+function humanAdditionalTalentOptions(
+  path: Exclude<Path, "">,
+  focus: Exclude<PathFocus, ""> | ""
+): readonly string[] {
+  // Rule 1: Agent → Investigator
+  if (path === "Agent" && focus === "Investigator") {
+    return [
+      "Watchful Eye",
+      "Get Em Talking",
+      ...otherPathKeyTalents("Agent"), // any OTHER path’s Key Talent
+    ] as const;
+  }
+
+  // TODO: Add rules for other path/specialty combos here as you define them.
+  return [] as const;
 }
 
 export default function TalentsPage() {
   const {
     ancestry,
     path,
+    pathFocus,
     selectedPathTalent,
     setSelectedPathTalent,
   } = useCharacterStore();
 
-  const keyTalent = useMemo(
-    () => computeKeyTalent(path as Path),
-    [path]
-  );
-
-  const needsAncestry = !ancestry;
-  const needsPath = !!ancestry && !path;
+  const keyTalent = useMemo(() => keyTalentFromPath(path as Path), [path]);
 
   const isSinger = ancestry === "Singer";
   const isHuman = ancestry === "Human (Roshar)";
+  const hasBasics = !!ancestry && !!path;
 
-  const humanOptions =
-    path ? PATH_TALENT_OPTIONS[path as Exclude<Path, "">] : [];
+  const humanOptions = useMemo(() => {
+    if (!isHuman || !path || !pathFocus) return [] as const;
+    return humanAdditionalTalentOptions(
+      path as Exclude<Path, "">,
+      pathFocus as Exclude<PathFocus, "">
+    );
+  }, [isHuman, path, pathFocus]);
 
   return (
     <div className="mx-auto max-w-3xl">
       <h1 className="mb-2 text-2xl font-bold">Talents</h1>
       <p className="mb-6 text-sm text-gray-600">
-        Your <strong>Key Talent</strong> comes from your <strong>Path</strong> (for both Humans and Singers).
-        <br />
-        Singers also gain <strong>Change Form</strong>.
-        Humans will <strong>choose one additional Path Talent</strong> (options coming soon).
+        Your <strong>Key Talent</strong> is determined by your <strong>Path</strong> (Humans & Singers).
+        Singers also gain <strong>Change Form</strong>. Humans select one additional Path Talent once a
+        <strong> Specialty</strong> is chosen.
       </p>
 
-      {(needsAncestry || needsPath) ? (
+      {!hasBasics ? (
         <div className="rounded-xl border p-4">
           <p className="text-sm text-gray-700">
-            {needsAncestry && (
-              <>
-                Choose your <strong>Ancestry</strong> on{" "}
-                <Link href="/basics" className="underline">Basics</Link>.
-              </>
-            )}
-            {!needsAncestry && needsPath && (
-              <>
-                Choose your <strong>Path</strong> on{" "}
-                <Link href="/basics" className="underline">Basics</Link>, then return here.
-              </>
-            )}
+            Choose your <strong>Ancestry</strong> and <strong>Path</strong> on{" "}
+            <Link href="/basics" className="underline">Basics</Link>, then return here.
           </p>
         </div>
       ) : (
@@ -81,13 +85,16 @@ export default function TalentsPage() {
           {/* Key Talent (from Path) */}
           <section className="mb-6 rounded-xl border p-4">
             <div className="mb-2 flex items-center justify-between">
-              <div className="text-sm text-gray-600">Key Talent</div>
+              <div className="text-sm text-gray-600">Key Talent (from Path)</div>
               <Sparkles className="h-5 w-5 text-gray-500" aria-hidden />
             </div>
             <div className="text-2xl font-semibold">{keyTalent ?? "—"}</div>
+            <p className="mt-2 text-xs text-gray-500">
+              Path: {path}. Ancestry: {ancestry}.
+            </p>
           </section>
 
-          {/* Additional Talent — depends on Ancestry */}
+          {/* Singer: fixed additional Talent */}
           {isSinger && (
             <section className="mb-6 rounded-xl border p-4">
               <div className="mb-2 flex items-center justify-between">
@@ -95,23 +102,33 @@ export default function TalentsPage() {
                 <Wand2 className="h-5 w-5 text-gray-500" aria-hidden />
               </div>
               <div className="text-2xl font-semibold">Change Form</div>
+              <p className="mt-2 text-xs text-gray-500">
+                Singers always gain <em>Change Form</em> in addition to their Key Talent.
+              </p>
             </section>
           )}
 
+          {/* Human: additional talent — unlocked after Specialty */}
           {isHuman && (
             <section className="mb-6 rounded-xl border p-4">
               <div className="mb-2 flex items-center justify-between">
-                <div className="text-sm text-gray-600">Path Specialty</div>
+                <div className="text-sm text-gray-600">Additional Talent (Human)</div>
                 <Wand2 className="h-5 w-5 text-gray-500" aria-hidden />
               </div>
 
-              {humanOptions.length === 0 ? (
+              {!pathFocus ? (
+                <p className="text-sm">
+                  Choose a <strong>Specialty</strong> on the{" "}
+                  <Link href="/paths" className="underline">Paths</Link> page to unlock this choice.
+                </p>
+              ) : humanOptions.length === 0 ? (
                 <>
                   <div className="text-sm">
-                    No talent options have been provided yet for <strong>{path}</strong>.
+                    No options defined yet for <strong>{path}</strong> →{" "}
+                    <strong>{pathFocus}</strong>.
                   </div>
                   <p className="mt-2 text-xs text-gray-500">
-                    Once you post the Path-specific talent list, this selector will enable and your choice will be saved.
+                    Once you provide the options, the selector will enable.
                   </p>
                 </>
               ) : (
@@ -126,7 +143,7 @@ export default function TalentsPage() {
                     onChange={(e) => setSelectedPathTalent(e.target.value)}
                   >
                     <option value="" disabled>
-                      Select a Specialty…
+                      Select a talent…
                     </option>
                     {humanOptions.map((opt) => (
                       <option key={opt} value={opt}>
@@ -136,11 +153,28 @@ export default function TalentsPage() {
                   </select>
                 </div>
               )}
+
+              {selectedPathTalent && (
+                <p className="mt-2 text-xs text-gray-500">
+                  Chosen: <em>{selectedPathTalent}</em>
+                </p>
+              )}
             </section>
           )}
         </>
       )}
 
+      <div className="mt-6 flex items-center gap-3">
+        <Link href="/skills" className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50">
+          ← Back to Skills
+        </Link>
+        <Link
+          href="/surges"
+          className="ml-auto rounded-lg bg-gray-900 px-3 py-2 text-sm text-white hover:opacity-90"
+        >
+          Continue to Surges →
+        </Link>
+      </div>
     </div>
   );
 }
