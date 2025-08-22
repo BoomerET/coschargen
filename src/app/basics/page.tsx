@@ -1,7 +1,5 @@
-// app/basics/page.tsx
 "use client";
 
-import Link from "next/link";
 import {
   useCharacterStore,
   type Ancestry,

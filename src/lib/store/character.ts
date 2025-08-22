@@ -154,7 +154,8 @@ const ZERO_STATS: Stats = { STR: 0, SPD: 0, INT: 0, WIL: 0, AWA: 0, PRE: 0 };
 
 export const useCharacterStore = create<CharacterState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
+      //(set, get) => ({
       // basics
       name: "",
       ancestry: "",
@@ -211,7 +212,7 @@ export const useCharacterStore = create<CharacterState>()(
     const current = state.skillRanks[key] ?? 0;
 
     // clamp requested value to 0..2 (creation cap)
-    let desired = Math.max(0, Math.min(2, Math.floor(raw)));
+    const desired = Math.max(0, Math.min(2, Math.floor(raw)));
 
     // how many points are spent on OTHER skills
     const spentWithoutThis = (Object.entries(state.skillRanks) as [SkillKey, number][])

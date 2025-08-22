@@ -1,16 +1,23 @@
 // src/app/expertises/page.tsx
 "use client";
 
-import { useMemo } from "react";
+//import { useMemo } from "react";
 import {
   useCharacterStore,
-  type AnyExpertise,
-  type CulturalExpertise,
   type ArmorExpertise,
   type UtilityExpertise,
   type WeaponExpertise,
 } from "@/lib/store/character";
-import Link from "next/link";
+//import Link from "next/link";
+
+import type {
+  AnyExpertise,
+  CulturalExpertise,
+} from "@/lib/store/character";
+
+function isCultural(e: AnyExpertise): e is CulturalExpertise {
+  return CULTURAL_SET.has(e as CulturalExpertise);
+}
 
 // ── Data lists ──
 const ARMOR: readonly ArmorExpertise[] = [
@@ -27,13 +34,14 @@ const CULTURAL: readonly CulturalExpertise[] = [
   "Alethi","Azish","Herdazian","High Society","Iriali","Kharbranthian","Listener",
   "Military Life","Natan","Reshi","Shin","Thaylen","Underworld","Unkalaki","Veden","Wayfarer",
 ] as const;
+const CULTURAL_SET: ReadonlySet<CulturalExpertise> = new Set(CULTURAL);
 
 const UTILITY: readonly UtilityExpertise[] = [
   "Animal Care","Armor Crafting","Culinary Arts","Engineering","Equipment","History",
   "Literature","Military","Religion","Riding Horses","Stormwardens","Visual Arts","Weapon Crafting",
 ] as const;
 
-const ALL: readonly AnyExpertise[] = [...CULTURAL, ...ARMOR, ...UTILITY, ...WEAPONS] as const;
+//const ALL: readonly AnyExpertise[] = [...CULTURAL, ...ARMOR, ...UTILITY, ...WEAPONS] as const;
 
 export default function ExpertisesPage() {
   const {
@@ -46,29 +54,29 @@ export default function ExpertisesPage() {
   } = useCharacterStore();
 
   const intCap = stats.INT ?? 0;
-  const culturalCount = culturalExpertises.length;
-  const generalCount = generalExpertises.length;
+  //const culturalCount = culturalExpertises.length;
+  //const generalCount = generalExpertises.length;
 
-  const isCulturalChecked = (e: CulturalExpertise) => culturalExpertises.includes(e);
+  //const isCulturalChecked = (e: CulturalExpertise) => culturalExpertises.includes(e);
   const isGeneralChecked = (e: AnyExpertise) => generalExpertises.includes(e);
 
-  const culturalFull = culturalCount >= 2;
-  const generalFull = generalCount >= intCap;
+  //const culturalFull = culturalCount >= 2;
+  //const generalFull = generalCount >= intCap;
 
   // For “Additional Expertises”, we gray out items already chosen as Cultural
-  const isBlockedByCultural = (e: AnyExpertise) => (culturalExpertises as readonly AnyExpertise[]).includes(e);
+  //const isBlockedByCultural = (e: AnyExpertise) => (culturalExpertises as readonly AnyExpertise[]).includes(e);
 
   // Helpful booleans
-  const needsMoreCultural = culturalCount < 2;
-  const needsMoreGeneral = generalCount < intCap;
+  //const needsMoreCultural = culturalCount < 2;
+  //const needsMoreGeneral = generalCount < intCap;
 
-  const statusNote = useMemo(() => {
-    const parts: string[] = [];
-    if (needsMoreCultural) parts.push(`Choose ${2 - culturalCount} more Cultural`);
-    if (intCap > 0 && needsMoreGeneral) parts.push(`Choose ${intCap - generalCount} more Additional`);
-    if (intCap === 0) parts.push("No Additional expertises required (INT 0)");
-    return parts.join(" · ");
-  }, [culturalCount, generalCount, intCap, needsMoreCultural, needsMoreGeneral]);
+  //const statusNote = useMemo(() => {
+  //  const parts: string[] = [];
+  //  if (needsMoreCultural) parts.push(`Choose ${2 - culturalCount} more Cultural`);
+  //  if (intCap > 0 && needsMoreGeneral) parts.push(`Choose ${intCap - generalCount} more Additional`);
+  //  if (intCap === 0) parts.push("No Additional expertises required (INT 0)");
+  //  return parts.join(" · ");
+  //}, [culturalCount, generalCount, intCap, needsMoreCultural, needsMoreGeneral]);
   
   const totalAllowed = 2 + intCap;
   const totalSelected = culturalExpertises.length + generalExpertises.length;
@@ -134,7 +142,9 @@ export default function ExpertisesPage() {
     // or when overall cap is reached; also prevent dupes with Cultural.
     (!isGeneralChecked(item) &&
       (needTwoCulturalFirst || totalSelected >= totalAllowed)) ||
-    culturalExpertises.includes(item as any)
+    //culturalExpertises.includes(item as any)
+    (isCultural(item) && culturalExpertises.includes(item))
+
   }
   onToggle={(e) => toggleGeneral(e)}
 />
@@ -147,7 +157,9 @@ export default function ExpertisesPage() {
   isDisabled={(item) =>
     (!isGeneralChecked(item) &&
       (needTwoCulturalFirst || totalSelected >= totalAllowed)) ||
-    culturalExpertises.includes(item as any)
+    //culturalExpertises.includes(item as any)
+    (isCultural(item) && culturalExpertises.includes(item))
+
   }
   onToggle={(e) => toggleGeneral(e)}
 />
@@ -160,7 +172,9 @@ export default function ExpertisesPage() {
   isDisabled={(item) =>
     (!isGeneralChecked(item) &&
       (needTwoCulturalFirst || totalSelected >= totalAllowed)) ||
-    culturalExpertises.includes(item as any)
+    //culturalExpertises.includes(item as any)
+    (isCultural(item) && culturalExpertises.includes(item))
+
   }
   onToggle={(e) => toggleGeneral(e)}
 />

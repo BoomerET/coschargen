@@ -9,7 +9,6 @@ import {
   BookOpen, // Basics
   BarChart3, // Stats
   Map, // Paths
-  Feather, // Skills
   ListChecks,
   Brain, // Expertises
   Wand2, // Talents

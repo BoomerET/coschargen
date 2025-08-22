@@ -3,6 +3,8 @@
 
 import { useMemo } from "react";
 import { useCharacterStore, type StatKey } from "@/lib/store/character";
+//import { type StatKey } from "@/lib/store/character";
+
 import { Eye, Shield, Brain, Sparkles } from "lucide-react";
 import DieIcon from "@/app/components/DieIcon";
 
@@ -68,8 +70,7 @@ function calcSensesRange(awa: number): string {
 }
 
 export default function StatsPage() {
-  const { stats, totalStatPoints, adjustStat, setStat, resetStats } =
-    useCharacterStore();
+  const { stats, totalStatPoints, setStat, resetStats } = useCharacterStore();
 
   const used = Object.values(stats).reduce((s, v) => s + v, 0);
   const remaining = totalStatPoints - used;
@@ -146,8 +147,8 @@ export default function StatsPage() {
       <div className="grid gap-4 sm:grid-cols-2">
         {ATTRS.map(({ key, label }) => {
           const value = stats[key];
-          const canDec = value > 0;
-          const canInc = value < 3 && remaining > 0;
+          //const canDec = value > 0;
+          //const canInc = value < 3 && remaining > 0;
 
           return (
             <div key={key} className="rounded-xl border p-4">
