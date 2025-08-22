@@ -43,13 +43,6 @@ export default function SkillsPage() {
   return (
     <div className="mx-auto max-w-5xl">
       <h1 className="mb-2 text-2xl font-bold">Skills</h1>
-      <p className="mb-4 text-sm text-gray-600">
-        You have <strong>{skillPointsTotal}</strong> points to raise skill ranks (max{" "}
-        <strong>2 per skill</strong>). Your Path grants a{" "}
-        <strong>minimum rank of 1</strong> in{" "}
-        {pathGranted ? <em>{pathGranted}</em> : "its associated skill"}.
-        Skill check = <strong>Effective Rank + Governing Attribute</strong>.
-      </p>
 
       <div
         className={[
