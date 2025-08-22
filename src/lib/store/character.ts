@@ -107,6 +107,25 @@ export const PATH_GRANTED_SKILL: Record<Exclude<Path, "">, SkillKey> = {
   Warrior: "Athletics",
 };
 
+// near your other exports
+export type PathKeyTalent =
+  | "Opportunist"
+  | "Rousing Presence"
+  | "Seek Quarry"
+  | "Decisive Command"
+  | "Erudition"
+  | "Vigilant Stance";
+
+export const PATH_KEY_TALENT: Record<Exclude<Path, "">, PathKeyTalent> = {
+  Agent: "Opportunist",
+  Envoy: "Rousing Presence",
+  Hunter: "Seek Quarry",
+  Leader: "Decisive Command",
+  Scholar: "Erudition",
+  Warrior: "Vigilant Stance",
+};
+
+
 // Helper: Effective skill rank (applies Path floor of 1)
 export function getEffectiveSkillRank(state: CharacterState, key: SkillKey): number {
   const base = state.skillRanks[key] ?? 0;
@@ -160,6 +179,11 @@ type CharacterState = {
   setSkillRank: (key: SkillKey, v: number) => void;
   resetSkills: () => void;
 
+  // Setters - Talents
+  selectedPathTalent: string; 
+  setSelectedPathTalent: (t: string) => void;
+
+
   // Global reset
   reset: () => void;
 };
@@ -188,12 +212,15 @@ export const useCharacterStore = create<CharacterState>()(
 
       // ── Basics setters ──
       setName: (v) => set({ name: v }),
-      setAncestry: (v) => set({ ancestry: v }),
+      setAncestry: (v) => set({ ancestry: v, selectedPathTalent: "" }),
       setPath: (v) =>
-        set((state) => {
+        set((state) => ({
           // When changing Path, clear focus; do not mutate skills (Path bonus is derived).
-          return { path: v, pathFocus: "" };
-        }),
+          //return { path: v, pathFocus: "" };
+          path: v,
+          pathFocus: "",
+          selectedPathTalent: "",
+        })),
       setPathFocus: (v) => set({ pathFocus: v }),
       setLevel: (lvl) => set({ level: Math.max(1, Math.min(21, Math.floor(lvl))) }),
 
