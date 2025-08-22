@@ -35,6 +35,18 @@ function humanAdditionalTalentOptions(
       "Get Em Talking",
       ...otherPathKeyTalents("Agent"), // any OTHER path’s Key Talent
     ] as const;
+  } else if (path === "Agent" && focus === "Spy") {
+    return [
+      "Sure Outcome",
+      "Plausible Excuse",
+      ...otherPathKeyTalents("Agent"), // any OTHER path’s Key Talent
+    ] as const;
+  } else if (path === "Agent" && focus === "Thief") {
+    return [
+      "Risky Behavior",
+      "Cheap Shot",
+      ...otherPathKeyTalents("Agent"), // any OTHER path’s Key Talent
+    ] as const;
   }
 
   // TODO: Add rules for other path/specialty combos here as you define them.
