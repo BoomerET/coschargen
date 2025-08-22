@@ -25,7 +25,7 @@ type KeyTalent =
   | "Vigilant Stance"
   | "Change Form";
 
-const HUMAN_KEY_TALENT_BY_PATH: Record<Exclude<Path, "">, Exclude<KeyTalent, "Change Form">> = {
+const KEY_TALENT_BY_PATH: Record<Exclude<Path, "">, Exclude<KeyTalent, "Change Form">> = {
   Agent: "Opportunist",
   Envoy: "Rousing Presence",
   Hunter: "Seek Quarry",
@@ -35,12 +35,12 @@ const HUMAN_KEY_TALENT_BY_PATH: Record<Exclude<Path, "">, Exclude<KeyTalent, "Ch
 };
 
 function computeKeyTalent(ancestry: Ancestry, path: Path): KeyTalent | null {
-  if (ancestry === "Singer") return "Change Form";
-  if (ancestry === "Human (Roshar)") {
-    if (!path) return null;
-    return HUMAN_KEY_TALENT_BY_PATH[path];
-  }
-  return null;
+  //if (ancestry === "Singer") return "Change Form";
+  //if (ancestry === "Human (Roshar)") {
+  if (!path) return null;
+    return KEY_TALENT_BY_PATH[path];
+  //}
+  //return null;
 }
 
 export default function TalentsPage() {
