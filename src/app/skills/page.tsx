@@ -59,7 +59,14 @@ export default function SkillsPage() {
         aria-live="polite"
       >
         Points remaining: <span className="ml-1 font-semibold">{pointsRemaining}</span>
-      </div>
+      </div>&nbsp;
+      <button
+          type="button"
+          onClick={resetSkills}
+          className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50"
+        >
+          Reset Ranks to 0
+        </button>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {SKILLS.map((k) => {
@@ -153,19 +160,6 @@ export default function SkillsPage() {
             </div>
           );
         })}
-      </div>
-
-      <div className="mt-6 flex items-center gap-3">
-        <button
-          type="button"
-          onClick={resetSkills}
-          className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50"
-        >
-          Reset all to 0
-        </button>
-        <span className="text-xs text-gray-500">
-          Budget and per-skill caps are enforced automatically.
-        </span>
       </div>
     </div>
   );
