@@ -29,12 +29,50 @@ export default function BasicsPage() {
     setPath,
     level,
     setLevel,
-    reset,
+    reset, // store action
   } = useCharacterStore();
+
+  // Robust reset: confirm, reset store, clear persisted cache (if present), rehydrate.
+  async function onResetAll() {
+    if (
+      !window.confirm(
+        "Reset ALL character data? This clears Basics, Stats, Expertises, Skills, and Talents."
+      )
+    ) {
+      return;
+    }
+
+    // 1) reset the in-memory store to its initial values
+    reset();
+
+    // 2) if using persist(), clear storage and rehydrate so nothing repopulates
+    const storeRef = useCharacterStore as unknown as {
+      persist?: {
+        clearStorage?: () => void | Promise<void>;
+        rehydrate?: () => void | Promise<void>;
+      };
+    };
+    try {
+      await storeRef.persist?.clearStorage?.();
+      await storeRef.persist?.rehydrate?.();
+    } catch {
+      // ignore if persist isn't attached or host blocks storage
+    }
+  }
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="mb-6 text-2xl font-bold">Basics</h1>
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Basics</h1>
+        <button
+          type="button"
+          onClick={onResetAll}
+          className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm hover:bg-gray-50"
+          title="Reset all character data"
+        >
+          Reset All
+        </button>
+      </div>
 
       {/* Name */}
       <div className="mb-6">
@@ -53,6 +91,8 @@ export default function BasicsPage() {
           className="w-full rounded-lg border px-3 py-2 outline-none ring-0 focus:border-gray-400"
         />
       </div>
+
+      {/* Level */}
       <div className="mb-6">
         <label
           htmlFor="level"
@@ -70,7 +110,7 @@ export default function BasicsPage() {
           value={level}
           onChange={(e) => {
             const n = Number(e.target.value);
-            setLevel(isNaN(n) ? 1 : n); // setter clamps 1–21
+            setLevel(Number.isNaN(n) ? 1 : n); // setter clamps 1–21
           }}
           onBlur={(e) => {
             if (e.currentTarget.value === "") setLevel(1);
@@ -133,13 +173,6 @@ export default function BasicsPage() {
       </fieldset>
 
       <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={reset}
-          className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50"
-        >
-          Clear
-        </button>
         <span className="text-sm text-gray-500">
           Selections are saved automatically.
         </span>
@@ -147,3 +180,4 @@ export default function BasicsPage() {
     </div>
   );
 }
+
