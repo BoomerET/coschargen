@@ -1,3 +1,4 @@
+// src/app/talents/page.tsx
 "use client";
 
 import { useMemo } from "react";
@@ -31,129 +32,66 @@ function humanAdditionalTalentOptions(
   path: Exclude<Path, "">,
   focus: Exclude<PathFocus, ""> | ""
 ): readonly string[] {
-  // Rule 1: Agent → Investigator
+  // Agent
   if (path === "Agent") {
     if (focus === "Investigator") {
-      return [
-        "Watchful Eye",
-        "Get Em Talking",
-        ...otherPathKeyTalents("Agent"), // any OTHER path’s Key Talent
-      ] as const;
+      return ["Watchful Eye", "Get Em Talking", ...otherPathKeyTalents("Agent")] as const;
     } else if (focus === "Spy") {
-      return [
-        "Sure Outcome",
-        "Plausible Excuse",
-        ...otherPathKeyTalents("Agent"), // any OTHER path’s Key Talent
-      ] as const;
+      return ["Sure Outcome", "Plausible Excuse", ...otherPathKeyTalents("Agent")] as const;
     } else if (focus === "Thief") {
-      return [
-        "Risky Behavior",
-        "Cheap Shot",
-        ...otherPathKeyTalents("Agent"), // any OTHER path’s Key Talent
-      ] as const;
-    }
-  } else if (path === "Envoy") {
-    if (focus === "Diplomat") {
-      return [
-        "Steadfast Challenge",
-        "Collected",
-        ...otherPathKeyTalents("Envoy"), // any OTHER path’s Key Talent
-      ] as const;
-    } else if (focus === "Faithful") {
-      return [
-        "Customary Garb",
-        "Galvanize",
-        ...otherPathKeyTalents("Envoy"), // any OTHER path’s Key Talent
-      ] as const;
-    } else if (focus === "Mentor") {
-      return [
-        "Sound Advice",
-        "Practical Demonstration",
-        ...otherPathKeyTalents("Envoy"), // any OTHER path’s Key Talent
-      ] as const;
-    }
-  } else if (path === "Hunter") {
-    if (focus === "Archer") {
-      return [
-        "Tagging Shot",
-        "Combat Training",
-        ...otherPathKeyTalents("Hunter"), // any OTHER path’s Key Talent
-      ] as const;
-    } else if (focus === "Assassin") {
-      return [
-        "Startling Blow",
-        "Killing Edge",
-        ...otherPathKeyTalents("Hunter"), // any OTHER path’s Key Talent
-      ] as const;
-    } else if (focus === "Tracker") {
-      return [
-        "Deadly Trap",
-        "Animal Bond",
-        ...otherPathKeyTalents("Hunter"), // any OTHER path’s Key Talent
-      ] as const;
-    }
-  } else if (path === "Leader") {
-    if (focus === "Champion") {
-      return [
-        "Combat Coordination",
-        "Valiant Intervention",
-        ...otherPathKeyTalents("Leader"), // any OTHER path’s Key Talent
-      ] as const;
-    } else if (focus === "Officer") {
-      return [
-        "Composed",
-        "Through the Fray",
-        ...otherPathKeyTalents("Leader"), // any OTHER path’s Key Talent
-      ] as const;
-    } else if (focus === "Politico") {
-      return [
-        "Cutthroat Tactics",
-        "Tactical Ploy",
-        ...otherPathKeyTalents("Leader"), // any OTHER path’s Key Talent
-      ] as const;
-    }
-  } else if (path === "Scholar") {
-    if (focus === "Artifabrian") {
-      return [
-        "Efficient Engineer",
-        "Prized Acquisition",
-        ...otherPathKeyTalents("Scholar"), // any OTHER path’s Key Talent
-      ] as const;
-    } else if (focus === "Strategist") {
-      return [
-        "Strategize",
-        "Mind and Body",
-        ...otherPathKeyTalents("Scholar"), // any OTHER path’s Key Talent
-      ] as const;
-    } else if (focus === "Surgeon") {
-      return [
-        "Field Medicine",
-        "Emotional Intelligence",
-        ...otherPathKeyTalents("Scholar"), // any OTHER path’s Key Talent
-      ] as const;
-    }
-  } else if (path === "Warrior") {
-    if (focus === "Duelist") {
-      return [
-        "Practiced Kata",
-        "Flamestance",
-        ...otherPathKeyTalents("Warrior"), // any OTHER path’s Key Talent
-      ] as const;
-    } else if (focus === "Shardbearer") {
-      return [
-        "Shard Training",
-        "Stonestance",
-        ...otherPathKeyTalents("Warrior"), // any OTHER path’s Key Talent
-      ] as const;
-    } else if (focus === "Soldier") {
-      return [
-        "Cautious Advance",
-        "Combat Training",
-        ...otherPathKeyTalents("Warrior"), // any OTHER path’s Key Talent
-      ] as const;
+      return ["Risky Behavior", "Cheap Shot", ...otherPathKeyTalents("Agent")] as const;
     }
   }
-  // TODO: Add rules for other path/specialty combos here as you define them.
+  // Envoy
+  else if (path === "Envoy") {
+    if (focus === "Diplomat") {
+      return ["Steadfast Challenge", "Collected", ...otherPathKeyTalents("Envoy")] as const;
+    } else if (focus === "Faithful") {
+      return ["Customary Garb", "Galvanize", ...otherPathKeyTalents("Envoy")] as const;
+    } else if (focus === "Mentor") {
+      return ["Sound Advice", "Practical Demonstration", ...otherPathKeyTalents("Envoy")] as const;
+    }
+  }
+  // Hunter
+  else if (path === "Hunter") {
+    if (focus === "Archer") {
+      return ["Tagging Shot", "Combat Training", ...otherPathKeyTalents("Hunter")] as const;
+    } else if (focus === "Assassin") {
+      return ["Startling Blow", "Killing Edge", ...otherPathKeyTalents("Hunter")] as const;
+    } else if (focus === "Tracker") {
+      return ["Deadly Trap", "Animal Bond", ...otherPathKeyTalents("Hunter")] as const;
+    }
+  }
+  // Leader
+  else if (path === "Leader") {
+    if (focus === "Champion") {
+      return ["Combat Coordination", "Valiant Intervention", ...otherPathKeyTalents("Leader")] as const;
+    } else if (focus === "Officer") {
+      return ["Composed", "Through the Fray", ...otherPathKeyTalents("Leader")] as const;
+    } else if (focus === "Politico") {
+      return ["Cutthroat Tactics", "Tactical Ploy", ...otherPathKeyTalents("Leader")] as const;
+    }
+  }
+  // Scholar
+  else if (path === "Scholar") {
+    if (focus === "Artifabrian") {
+      return ["Efficient Engineer", "Prized Acquisition", ...otherPathKeyTalents("Scholar")] as const;
+    } else if (focus === "Strategist") {
+      return ["Strategize", "Mind and Body", ...otherPathKeyTalents("Scholar")] as const;
+    } else if (focus === "Surgeon") {
+      return ["Field Medicine", "Emotional Intelligence", ...otherPathKeyTalents("Scholar")] as const;
+    }
+  }
+  // Warrior
+  else if (path === "Warrior") {
+    if (focus === "Duelist") {
+      return ["Practiced Kata", "Flamestance", ...otherPathKeyTalents("Warrior")] as const;
+    } else if (focus === "Shardbearer") {
+      return ["Shard Training", "Stonestance", ...otherPathKeyTalents("Warrior")] as const;
+    } else if (focus === "Soldier") {
+      return ["Cautious Advance", "Combat Training", ...otherPathKeyTalents("Warrior")] as const;
+    }
+  }
   return [] as const;
 }
 
@@ -183,16 +121,15 @@ export default function TalentsPage() {
   return (
     <div className="mx-auto max-w-3xl">
       <h1 className="mb-2 text-2xl font-bold">Talents</h1>
-      <p className="mb-6 text-sm text-gray-600">
-        Your <strong>Key Talent</strong> is determined by your{" "}
-        <strong>Path</strong> (Humans & Singers). Singers also gain{" "}
-        <strong>Change Form</strong>. Humans select one additional Path Talent
-        once a<strong> Specialty</strong> is chosen.
+      <p className="mb-6 text-sm text-gray-600 dark:text-gray-400">
+        Your <strong>Key Talent</strong> is determined by your <strong>Path</strong> (Humans &amp; Singers).
+        Singers also gain <strong>Change Form</strong>. Humans select one additional Path Talent once a{" "}
+        <strong>Specialty</strong> is chosen.
       </p>
 
       {!hasBasics ? (
-        <div className="rounded-xl border p-4">
-          <p className="text-sm text-gray-700">
+        <div className="rounded-xl border border-gray-200 bg-white/80 p-4 dark:border-gray-700 dark:bg-slate-900/60">
+          <p className="text-sm text-gray-700 dark:text-gray-300">
             Choose your <strong>Ancestry</strong> and <strong>Path</strong> on{" "}
             <Link href="/basics" className="underline">
               Basics
@@ -203,20 +140,20 @@ export default function TalentsPage() {
       ) : (
         <>
           {/* Key Talent (from Path) */}
-          <section className="mb-6 rounded-xl border p-4">
+          <section className="mb-6 rounded-xl border border-gray-200 bg-white/80 p-4 dark:border-gray-700 dark:bg-slate-900/60">
             <div className="mb-2 flex items-center justify-between">
-              <div className="text-sm text-gray-600">Key Talent</div>
-              <Sparkles className="h-5 w-5 text-gray-500" aria-hidden />
+              <div className="text-sm text-gray-600 dark:text-gray-400">Key Talent</div>
+              <Sparkles className="h-5 w-5 text-gray-500 dark:text-gray-400" aria-hidden />
             </div>
             <div className="text-2xl font-semibold">{keyTalent ?? "—"}</div>
           </section>
 
           {/* Singer: fixed additional Talent */}
           {isSinger && (
-            <section className="mb-6 rounded-xl border p-4">
+            <section className="mb-6 rounded-xl border border-gray-200 bg-white/80 p-4 dark:border-gray-700 dark:bg-slate-900/60">
               <div className="mb-2 flex items-center justify-between">
-                <div className="text-sm text-gray-600">Additional Talent</div>
-                <Wand2 className="h-5 w-5 text-gray-500" aria-hidden />
+                <div className="text-sm text-gray-600 dark:text-gray-400">Additional Talent</div>
+                <Wand2 className="h-5 w-5 text-gray-500 dark:text-gray-400" aria-hidden />
               </div>
               <div className="text-2xl font-semibold">Change Form</div>
             </section>
@@ -224,29 +161,23 @@ export default function TalentsPage() {
 
           {/* Human: additional talent — unlocked after Specialty */}
           {isHuman && (
-            <section className="mb-6 rounded-xl border p-4">
+            <section className="mb-6 rounded-xl border border-gray-200 bg-white/80 p-4 dark:border-gray-700 dark:bg-slate-900/60">
               <div className="mb-2 flex items-center justify-between">
-                <div className="text-sm text-gray-600">
-                  Additional Talent (Human)
-                </div>
-                <Wand2 className="h-5 w-5 text-gray-500" aria-hidden />
+                <div className="text-sm text-gray-600 dark:text-gray-400">Additional Talent (Human)</div>
+                <Wand2 className="h-5 w-5 text-gray-500 dark:text-gray-400" aria-hidden />
               </div>
 
               {!pathFocus ? (
-                <p className="text-sm">
+                <p className="text-sm text-gray-700 dark:text-gray-300">
                   Choose a <strong>Specialty</strong> on the{" "}
-                  <Link href="/paths" className="underline">
-                    Paths
-                  </Link>{" "}
-                  page to unlock this choice.
+                  <Link href="/paths" className="underline">Paths</Link> page to unlock this choice.
                 </p>
               ) : humanOptions.length === 0 ? (
                 <>
-                  <div className="text-sm">
-                    No options defined yet for <strong>{path}</strong> →{" "}
-                    <strong>{pathFocus}</strong>.
+                  <div className="text-sm text-gray-700 dark:text-gray-300">
+                    No options defined yet for <strong>{path}</strong> → <strong>{pathFocus}</strong>.
                   </div>
-                  <p className="mt-2 text-xs text-gray-500">
+                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                     Once you provide the options, the selector will enable.
                   </p>
                 </>
@@ -254,13 +185,13 @@ export default function TalentsPage() {
                 <div className="flex items-center gap-3">
                   <label
                     htmlFor="human-path-talent"
-                    className="text-sm text-gray-700"
+                    className="text-sm text-gray-700 dark:text-gray-200"
                   >
                     Choose one:
                   </label>
                   <select
                     id="human-path-talent"
-                    className="rounded-lg border px-3 py-2 text-sm"
+                    className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-400/30 dark:border-gray-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-slate-600/40"
                     value={selectedPathTalent}
                     onChange={(e) => setSelectedPathTalent(e.target.value)}
                   >
@@ -282,3 +213,4 @@ export default function TalentsPage() {
     </div>
   );
 }
+

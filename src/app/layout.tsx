@@ -14,19 +14,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
-      <html lang="en" className="h-full">
-        <head />
-        <body className="min-h-[100dvh] bg-white text-gray-900 antialiased">
-          <div className="flex min-h-[100dvh]">
+    <html lang="en" className="h-full">
+      <head />
+      <body className="min-h-dvh bg-white text-gray-900 antialiased dark:bg-slate-950 dark:text-slate-100">
+        <div className="flex min-h-dvh">
+          {/* Fixed-width, always-visible sidebar */}
+          <aside className="w-64 shrink-0 border-r border-gray-200 bg-white/80 dark:border-gray-700 dark:bg-slate-900/60">
             <Sidebar />
-            <main className="flex-1">
-              {/* Add page padding so content doesn’t hug the edges */}
-              <div className="mx-auto max-w-6xl px-4 py-6">{children}</div>
-            </main>
-          </div>
-        </body>
-      </html>
-    </>
+          </aside>
+
+          <main className="flex-1">
+            <div className="mx-auto max-w-6xl px-4 py-6">{children}</div>
+          </main>
+        </div>
+      </body>
+    </html>
   );
 }
+

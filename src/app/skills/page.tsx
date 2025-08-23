@@ -60,31 +60,35 @@ export default function SkillsPage() {
       0
     );
   }, [skillRanks, pathGranted]);
+
   const pointsRemaining = Math.max(0, skillPointsTotal - pointsSpent);
+
   return (
     <div className="mx-auto max-w-5xl">
       <h1 className="mb-2 text-2xl font-bold">Skills</h1>
+
       <div
         className={[
           "mb-6 inline-flex items-center rounded-full border px-3 py-1 text-sm",
           pointsRemaining === 0
-            ? "bg-gray-900 text-white border-gray-900"
-            : "bg-gray-50",
+            ? "bg-gray-900 text-white border-gray-900 dark:bg-slate-100 dark:text-slate-900 dark:border-slate-100"
+            : "bg-gray-50 text-gray-800 border-gray-200 dark:bg-slate-800 dark:text-gray-100 dark:border-gray-700",
         ].join(" ")}
         aria-live="polite"
       >
-        Points remaining:{" "}
+        Points remaining:
         <span className="ml-1 font-semibold">{pointsRemaining}</span>
       </div>
       &nbsp;
       <button
         type="button"
         onClick={resetSkills}
-        className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50"
+        className="rounded-lg border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-slate-800"
       >
         Reset Ranks to 0
       </button>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {SKILLS.map((k) => {
           const base = skillRanks[k] ?? 0; // stored 0..2
           const isPathSkill = pathGranted === k;
@@ -95,18 +99,12 @@ export default function SkillsPage() {
           const checkValue = effective + attrVal;
 
           // ----- INPUT MAPPING -----
-
-          // For the Path skill, input shows EFFECTIVE rank (1..2) and maps back to base:
-          //  - 1 => base 0 (free)
-          //  - 2 => base 2 (cost = 1)
           let inputMin = 0;
           let inputMax = Math.min(2, base + pointsRemaining);
           let inputValue = base;
 
-          // Compute whether we can raise Path skill to 2 given remaining points
           if (isPathSkill) {
             inputMin = 1;
-            // current cost for Path skill is 0 if base < 2 else 1
             const currentCost = base >= 2 ? 1 : 0;
             const canReachTwo = pointsRemaining >= 1 - currentCost;
             inputMax = canReachTwo ? 2 : 1;
@@ -127,9 +125,14 @@ export default function SkillsPage() {
           };
 
           return (
-            <div key={k} className="rounded-xl border p-4">
+            <div
+              key={k}
+              className="rounded-xl border border-gray-200 bg-white/80 p-4 dark:border-gray-700 dark:bg-slate-900/60"
+            >
               <div className="mb-2 flex items-center justify-between">
-                <div className="text-sm font-medium text-gray-800">{k}</div>
+                <div className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                  {k}
+                </div>
               </div>
 
               <input
@@ -146,31 +149,29 @@ export default function SkillsPage() {
                   onChange(n);
                 }}
                 onBlur={(e) => {
-                  // Empty -> keep current; wheel guard
-                  if (e.currentTarget.value === "")
-                    onChange(isPathSkill ? 1 : 0);
+                  if (e.currentTarget.value === "") onChange(isPathSkill ? 1 : 0);
                 }}
                 onWheel={(e) => (e.currentTarget as HTMLInputElement).blur()}
-                className="w-24 rounded-lg border px-2 py-1 text-center"
+                className="w-24 rounded-lg border border-gray-300 bg-white px-2 py-1 text-center text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-400/30 dark:border-gray-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-slate-600/40"
                 aria-describedby={`hint-${k}`}
               />
 
               <div className="mt-3 grid grid-cols-3 items-end gap-2">
                 <div>
-                  <div className="text-xs text-gray-500">Rank</div>
-                  <div className="mt-1 rounded-full bg-gray-900 px-3 py-1 text-center text-sm font-semibold text-white">
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Rank</div>
+                  <div className="mt-1 rounded-full bg-gray-900 px-3 py-1 text-center text-sm font-semibold text-white dark:bg-slate-100 dark:text-slate-900">
                     {effective}
                   </div>
                 </div>
                 <div>
-                  <div className="text-xs text-gray-500">{attrKey}</div>
-                  <div className="mt-1 rounded-full border px-3 py-1 text-center text-sm font-semibold">
+                  <div className="text-xs text-gray-500 dark:text-gray-400">{attrKey}</div>
+                  <div className="mt-1 rounded-full border border-gray-300 px-3 py-1 text-center text-sm font-semibold text-gray-900 dark:border-gray-700 dark:text-slate-100">
                     {attrVal}
                   </div>
                 </div>
                 <div>
-                  <div className="text-xs text-gray-500">Final</div>
-                  <div className="mt-1 rounded-full border px-3 py-1 text-center text-sm font-semibold">
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Final</div>
+                  <div className="mt-1 rounded-full border border-gray-300 px-3 py-1 text-center text-sm font-semibold text-gray-900 dark:border-gray-700 dark:text-slate-100">
                     {checkValue}
                   </div>
                 </div>
@@ -182,3 +183,4 @@ export default function SkillsPage() {
     </div>
   );
 }
+

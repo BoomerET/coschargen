@@ -3,8 +3,6 @@
 
 import { useMemo } from "react";
 import { useCharacterStore, type StatKey } from "@/lib/store/character";
-//import { type StatKey } from "@/lib/store/character";
-
 import { Eye, Shield, Brain, Sparkles } from "lucide-react";
 import DieIcon from "@/app/components/DieIcon";
 
@@ -24,7 +22,7 @@ function calcLiftingCapacity(str: number): number {
   if (s <= 4) return 500;
   if (s <= 6) return 1_000;
   if (s <= 8) return 5_000;
-  return 10_000; // 9+
+  return 10_000;
 }
 
 function calcCarryingCapacity(str: number): number {
@@ -34,7 +32,7 @@ function calcCarryingCapacity(str: number): number {
   if (s <= 4) return 250;
   if (s <= 6) return 500;
   if (s <= 8) return 2_500;
-  return 5_000; // 9+
+  return 5_000;
 }
 
 function calcMovementRate(spd: number): number {
@@ -44,7 +42,7 @@ function calcMovementRate(spd: number): number {
   if (s <= 4) return 30;
   if (s <= 6) return 40;
   if (s <= 8) return 60;
-  return 80; // 9+
+  return 80;
 }
 
 function calcRecoveryDie(
@@ -56,7 +54,7 @@ function calcRecoveryDie(
   if (w <= 4) return "1d8";
   if (w <= 6) return "1d10";
   if (w <= 8) return "1d12";
-  return "1d0"; // 9+
+  return "1d0";
 }
 
 function calcSensesRange(awa: number): string {
@@ -66,7 +64,7 @@ function calcSensesRange(awa: number): string {
   if (a <= 4) return "20 ft";
   if (a <= 6) return "50 ft";
   if (a <= 8) return "100 ft";
-  return "Unaffected by obscured senses"; // 9+
+  return "Unaffected by obscured senses";
 }
 
 export default function StatsPage() {
@@ -75,11 +73,6 @@ export default function StatsPage() {
   const used = Object.values(stats).reduce((s, v) => s + v, 0);
   const remaining = totalStatPoints - used;
 
-  //const str = stats?.STR ?? 0;
-  //const spd = stats?.SPD ?? 0;
-  //const wil = stats?.WIL ?? 0;
-  //const awa = stats?.AWA ?? 0;
-  //const int = stats?.INT ?? 0;
   const {
     str = 0,
     spd = 0,
@@ -101,18 +94,19 @@ export default function StatsPage() {
   const dieSides = parseInt((recoveryDie || "").replace(/^\d*d/, ""), 10) || 0;
   const sensesRange = useMemo(() => calcSensesRange(awa), [awa]);
 
-  const { lifting, carrying } = useMemo(() => {
-    return {
+  const { lifting, carrying } = useMemo(
+    () => ({
       lifting: calcLiftingCapacity(str),
       carrying: calcCarryingCapacity(str),
-    };
-  }, [str]);
+    }),
+    [str]
+  );
 
   const defenses = useMemo(
     () => ({
-      physical: 10 + str + spd, // 10 + STR + SPD
-      cognitive: 10 + int + wil, // 10 + INT + WIL
-      spiritual: 10 + awa + pre, // 10 + AWA + PRE
+      physical: 10 + str + spd,
+      cognitive: 10 + int + wil,
+      spiritual: 10 + awa + pre,
     }),
     [str, spd, int, wil, awa, pre]
   );
@@ -120,39 +114,42 @@ export default function StatsPage() {
   return (
     <div className="mx-auto max-w-3xl">
       <h1 className="mb-2 text-2xl font-bold">Stats</h1>
+
       {/* Remaining points */}
       <div
         className={[
           "mb-4 inline-flex items-center rounded-full border px-3 py-1 text-sm",
+          "border-gray-200 dark:border-gray-700",
           remaining === 0
-            ? "bg-gray-900 text-white border-gray-900"
-            : "bg-gray-50",
+            ? "bg-gray-900 text-white dark:bg-slate-100 dark:text-slate-900"
+            : "bg-gray-50 text-gray-800 dark:bg-slate-800 dark:text-gray-100",
         ].join(" ")}
         aria-live="polite"
       >
-        Remaining points:{" "}
+        Remaining points:
         <span className="ml-1 font-semibold">{remaining}</span>
       </div>
-      &nbsp;&nbsp;&nbsp;
+
       <button
         type="button"
         onClick={resetStats}
-        className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50"
+        className="rounded-lg border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-slate-800"
       >
         Reset all to 0
       </button>
+
       {/* Grid of attributes */}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
         {ATTRS.map(({ key, label }) => {
           const value = stats[key];
-          //const canDec = value > 0;
-          //const canInc = value < 3 && remaining > 0;
-
           return (
-            <div key={key} className="rounded-xl border p-4">
-              <div className="mb-3 flex items-center justify-between">
-                <div>
-                  <div className="text-sm text-gray-600">{label}</div>
+            <div
+              key={key}
+              className="rounded-xl border border-gray-200 bg-white/80 p-4 dark:border-gray-700 dark:bg-slate-900/60"
+            >
+              <div className="mb-3">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  {label}
                 </div>
               </div>
 
@@ -166,60 +163,72 @@ export default function StatsPage() {
                   aria-label={`${label} value`}
                   onChange={(e) => {
                     const raw = Number(e.target.value);
-                    // setStat enforces 0–3 and the overall 12-point cap
-                    setStat(key, isNaN(raw) ? 0 : raw);
+                    setStat(key, Number.isNaN(raw) ? 0 : raw);
                   }}
-                  className="w-16 rounded-lg border px-2 py-1 text-center"
+                  className="w-16 rounded-lg border border-gray-300 bg-white px-2 py-1 text-center text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-400/30 dark:border-gray-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-slate-600/40"
                 />
               </div>
             </div>
           );
         })}
       </div>
+
       <section className="mt-8">
-        <p>
+        <p className="text-gray-800 dark:text-gray-200">
           <b>Derived Stats</b>
         </p>
-        <hr />
+        <hr className="border-gray-200 dark:border-gray-700" />
         <br />
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-xl border p-4">
-            <div className="text-sm text-gray-600">Lifting Capacity</div>
+          <div className="rounded-xl border border-gray-200 bg-white/80 p-4 dark:border-gray-700 dark:bg-slate-900/60">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              Lifting Capacity
+            </div>
             <div className="mt-1 text-2xl font-semibold">
               {lifting.toLocaleString()} lbs
             </div>
           </div>
 
-          <div className="rounded-xl border p-4">
-            <div className="text-sm text-gray-600">Carrying Capacity</div>
+          <div className="rounded-xl border border-gray-200 bg-white/80 p-4 dark:border-gray-700 dark:bg-slate-900/60">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              Carrying Capacity
+            </div>
             <div className="mt-1 text-2xl font-semibold">
               {carrying.toLocaleString()} lbs
             </div>
           </div>
         </div>
       </section>
+
       <section className="mt-8">
         <div className="grid gap-4 sm:grid-cols-2">
           {/* Movement Rate (SPD) */}
-          <div className="rounded-xl border p-4">
-            <div className="text-sm text-gray-600">Movement Rate</div>
+          <div className="rounded-xl border border-gray-200 bg-white/80 p-4 dark:border-gray-700 dark:bg-slate-900/60">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              Movement Rate
+            </div>
             <div className="mt-1 text-2xl font-semibold">
               {movementFt}ft/action
             </div>
           </div>
 
           {/* Recovery Die (WIL) */}
-          <div className="rounded-xl border p-4">
+          <div className="rounded-xl border border-gray-200 bg-white/80 p-4 dark:border-gray-700 dark:bg-slate-900/60">
             <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-600">Recovery Die</div>
-              <DieIcon sides={dieSides} className="h-5 w-5 text-gray-500" />
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Recovery Die
+              </div>
+              <DieIcon
+                sides={dieSides}
+                className="h-5 w-5 text-gray-500 dark:text-gray-400"
+              />
             </div>
             <div className="mt-1 inline-flex items-center gap-2">
               <span className="text-2xl font-semibold">{recoveryDie}</span>
             </div>
 
             {recoveryDie === "1d0" && (
-              <p className="mt-2 text-xs italic text-gray-500">
+              <p className="mt-2 text-xs italic text-gray-500 dark:text-gray-400">
                 Note: a d0 always rolls 0. If this is intentional, you&rsquo;re
                 all set; if you meant a higher die (e.g., d20), let me know and
                 I’ll update the ladder.
@@ -228,22 +237,28 @@ export default function StatsPage() {
           </div>
         </div>
       </section>
+
       <section className="mt-8">
-        <div className="rounded-xl border p-4">
+        <div className="rounded-xl border border-gray-200 bg-white/80 p-4 dark:border-gray-700 dark:bg-slate-900/60">
           <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600">Senses Range</div>
-            <Eye className="h-5 w-5 text-gray-500" aria-hidden />
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              Senses Range
+            </div>
+            <Eye className="h-5 w-5 text-gray-500 dark:text-gray-400" aria-hidden />
           </div>
           <div className="mt-1 text-2xl font-semibold">{sensesRange}</div>
         </div>
       </section>
+
       <section className="mt-8">
         <div className="grid gap-4 md:grid-cols-3">
           {/* Physical Defense */}
-          <div className="rounded-xl border p-4">
+          <div className="rounded-xl border border-gray-200 bg-white/80 p-4 dark:border-gray-700 dark:bg-slate-900/60">
             <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-600">Physical Defense</div>
-              <Shield className="h-5 w-5 text-gray-500" aria-hidden />
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Physical Defense
+              </div>
+              <Shield className="h-5 w-5 text-gray-500 dark:text-gray-400" aria-hidden />
             </div>
             <div className="mt-1 text-2xl font-semibold">
               {defenses.physical}
@@ -251,10 +266,12 @@ export default function StatsPage() {
           </div>
 
           {/* Cognitive Defense */}
-          <div className="rounded-xl border p-4">
+          <div className="rounded-xl border border-gray-200 bg-white/80 p-4 dark:border-gray-700 dark:bg-slate-900/60">
             <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-600">Cognitive Defense</div>
-              <Brain className="h-5 w-5 text-gray-500" aria-hidden />
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Cognitive Defense
+              </div>
+              <Brain className="h-5 w-5 text-gray-500 dark:text-gray-400" aria-hidden />
             </div>
             <div className="mt-1 text-2xl font-semibold">
               {defenses.cognitive}
@@ -262,10 +279,12 @@ export default function StatsPage() {
           </div>
 
           {/* Spiritual Defense */}
-          <div className="rounded-xl border p-4">
+          <div className="rounded-xl border border-gray-200 bg-white/80 p-4 dark:border-gray-700 dark:bg-slate-900/60">
             <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-600">Spiritual Defense</div>
-              <Sparkles className="h-5 w-5 text-gray-500" aria-hidden />
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Spiritual Defense
+              </div>
+              <Sparkles className="h-5 w-5 text-gray-500 dark:text-gray-400" aria-hidden />
             </div>
             <div className="mt-1 text-2xl font-semibold">
               {defenses.spiritual}
@@ -276,3 +295,4 @@ export default function StatsPage() {
     </div>
   );
 }
+

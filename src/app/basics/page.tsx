@@ -1,5 +1,7 @@
+// src/app/basics/page.tsx
 "use client";
 
+import { RotateCcw } from "lucide-react";
 import {
   useCharacterStore,
   type Ancestry,
@@ -41,11 +43,9 @@ export default function BasicsPage() {
     ) {
       return;
     }
-
-    // 1) reset the in-memory store to its initial values
     reset();
 
-    // 2) if using persist(), clear storage and rehydrate so nothing repopulates
+    // Safely access zustand-persist helpers if available (no 'any' casts)
     const storeRef = useCharacterStore as unknown as {
       persist?: {
         clearStorage?: () => void | Promise<void>;
@@ -56,20 +56,22 @@ export default function BasicsPage() {
       await storeRef.persist?.clearStorage?.();
       await storeRef.persist?.rehydrate?.();
     } catch {
-      // ignore if persist isn't attached or host blocks storage
+      // ignore if persist isn't attached or storage is blocked
     }
   }
 
   return (
     <div className="mx-auto max-w-2xl">
-      <div className="mb-4 flex items-center justify-between">
+      {/* Header with Reset All */}
+      <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Basics</h1>
         <button
           type="button"
           onClick={onResetAll}
-          className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm hover:bg-gray-50"
+          className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-slate-800"
           title="Reset all character data"
         >
+          <RotateCcw className="h-4 w-4" />
           Reset All
         </button>
       </div>
@@ -78,7 +80,7 @@ export default function BasicsPage() {
       <div className="mb-6">
         <label
           htmlFor="name"
-          className="mb-2 block text-sm font-medium text-gray-800"
+          className="mb-2 block text-sm font-medium text-gray-800 dark:text-gray-200"
         >
           Player Character Name
         </label>
@@ -88,7 +90,13 @@ export default function BasicsPage() {
           placeholder="Enter a character name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full rounded-lg border px-3 py-2 outline-none ring-0 focus:border-gray-400"
+          className="
+            w-full rounded-lg border px-3 py-2
+            border-gray-300 bg-white text-gray-900 placeholder:text-gray-400
+            focus:outline-none focus:ring-2 focus:ring-gray-400/30
+            dark:border-gray-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500
+            dark:focus:ring-slate-600/40
+          "
         />
       </div>
 
@@ -96,7 +104,7 @@ export default function BasicsPage() {
       <div className="mb-6">
         <label
           htmlFor="level"
-          className="mb-2 block text-sm font-medium text-gray-800"
+          className="mb-2 block text-sm font-medium text-gray-800 dark:text-gray-200"
         >
           Level
         </label>
@@ -110,26 +118,35 @@ export default function BasicsPage() {
           value={level}
           onChange={(e) => {
             const n = Number(e.target.value);
-            setLevel(Number.isNaN(n) ? 1 : n); // setter clamps 1–21
+            setLevel(Number.isNaN(n) ? 1 : n);
           }}
           onBlur={(e) => {
             if (e.currentTarget.value === "") setLevel(1);
           }}
-          className="w-24 rounded-lg border px-2 py-1 text-center"
+          className="
+            w-24 rounded-lg border px-2 py-1 text-center
+            border-gray-300 bg-white text-gray-900
+            focus:outline-none focus:ring-2 focus:ring-gray-400/30
+            dark:border-gray-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-slate-600/40
+          "
           aria-describedby="level-hint"
         />
       </div>
 
       {/* Ancestry */}
-      <fieldset className="mb-6">
-        <legend className="mb-2 block text-sm font-medium text-gray-800">
+      <fieldset className="mb-6 rounded-xl border border-gray-200 p-4 dark:border-gray-700">
+        <legend className="mb-2 block text-sm font-medium text-gray-800 dark:text-gray-200">
           Ancestry (select one)
         </legend>
         <div className="grid gap-2 sm:grid-cols-2">
           {ANCESTRIES.map((opt) => (
             <label
               key={opt}
-              className="flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 hover:bg-gray-50"
+              className="
+                flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2
+                border-gray-200 bg-white/80 hover:bg-gray-50
+                dark:border-gray-700 dark:bg-slate-900/60 dark:hover:bg-slate-800
+              "
             >
               <input
                 type="radio"
@@ -137,25 +154,29 @@ export default function BasicsPage() {
                 value={opt}
                 checked={ancestry === opt}
                 onChange={() => setAncestry(opt)}
-                className="h-4 w-4"
+                className="h-4 w-4 accent-indigo-600 dark:accent-indigo-400"
                 aria-label={opt}
               />
-              <span>{opt}</span>
+              <span className="text-gray-800 dark:text-gray-200">{opt}</span>
             </label>
           ))}
         </div>
       </fieldset>
 
       {/* Path */}
-      <fieldset className="mb-6">
-        <legend className="mb-2 block text-sm font-medium text-gray-800">
+      <fieldset className="mb-6 rounded-xl border border-gray-200 p-4 dark:border-gray-700">
+        <legend className="mb-2 block text-sm font-medium text-gray-800 dark:text-gray-200">
           Path (select one)
         </legend>
         <div className="grid gap-2 sm:grid-cols-3">
           {PATHS.map((opt) => (
             <label
               key={opt}
-              className="flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 hover:bg-gray-50"
+              className="
+                flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2
+                border-gray-200 bg-white/80 hover:bg-gray-50
+                dark:border-gray-700 dark:bg-slate-900/60 dark:hover:bg-slate-800
+              "
             >
               <input
                 type="radio"
@@ -163,20 +184,18 @@ export default function BasicsPage() {
                 value={opt}
                 checked={path === opt}
                 onChange={() => setPath(opt)}
-                className="h-4 w-4"
+                className="h-4 w-4 accent-indigo-600 dark:accent-indigo-400"
                 aria-label={opt}
               />
-              <span>{opt}</span>
+              <span className="text-gray-800 dark:text-gray-200">{opt}</span>
             </label>
           ))}
         </div>
       </fieldset>
 
-      <div className="flex items-center gap-3">
-        <span className="text-sm text-gray-500">
-          Selections are saved automatically.
-        </span>
-      </div>
+      <p className="text-sm text-gray-600 dark:text-gray-400">
+        Selections are saved automatically.
+      </p>
     </div>
   );
 }

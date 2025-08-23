@@ -3,18 +3,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import type { ComponentType } from "react";
+import { useState, type ComponentType } from "react";
 import {
-  BookOpen, // Basics
-  BarChart3, // Stats
-  Map, // Paths
-  ListChecks,
-  Brain, // Expertises
-  Wand2, // Talents
-  Zap, // Surges
-  Sparkles, // Radiant Powers
-  Save, // Export
+  BookOpen,      // Basics
+  BarChart3,     // Stats
+  Map,           // Paths
+  ListChecks,    // Skills
+  Brain,         // Expertises
+  Wand2,         // Talents
+  Zap,           // Surges
+  Sparkles,      // Radiant Powers
+  Save,          // Export
 } from "lucide-react";
 
 type IconType = ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
@@ -41,41 +40,40 @@ export default function Sidebar() {
   return (
     <>
       {/* Mobile top bar */}
-      <div className="lg:hidden sticky top-0 z-40 border-b bg-white/90 backdrop-blur">
+      <div className="sticky top-0 z-40 border-b border-gray-200 bg-white/90 backdrop-blur dark:border-gray-700 dark:bg-slate-900/60 lg:hidden">
         <div className="mx-auto flex h-14 max-w-screen-2xl items-center justify-between px-4">
           <span className="font-semibold">Cosmere Character Generator</span>
           <button
             onClick={() => setOpen((v) => !v)}
             aria-label="Toggle navigation"
-            className="inline-flex items-center rounded-lg border px-3 py-2 text-sm hover:bg-gray-50"
+            className="inline-flex items-center rounded-lg border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/60 dark:border-gray-700 dark:hover:bg-slate-800"
           >
             {open ? "Close" : "Menu"}
           </button>
         </div>
         {open && (
           <nav
-            className="border-t bg-white px-2 py-2"
+            className="border-t border-gray-200 bg-white px-2 py-2 dark:border-gray-700 dark:bg-slate-900"
             aria-label="Mobile Navigation"
           >
             <ul className="grid gap-1">
-              {NAV_ITEMS.map((item) => {
-                const active = isActive(item.href);
-                const Icon = item.icon;
+              {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+                const active = isActive(href);
                 return (
-                  <li key={item.href}>
+                  <li key={href}>
                     <Link
-                      href={item.href}
+                      href={href}
                       aria-current={active ? "page" : undefined}
                       onClick={() => setOpen(false)}
                       className={[
-                        "flex items-center gap-2 rounded-md px-3 py-2 text-sm",
+                        "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/60",
                         active
-                          ? "bg-gray-900 text-white"
-                          : "text-gray-700 hover:bg-gray-100",
+                          ? "bg-gray-900 text-white dark:bg-slate-100 dark:text-slate-900"
+                          : "text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-800",
                       ].join(" ")}
                     >
                       <Icon className="h-4 w-4" aria-hidden />
-                      <span>{item.label}</span>
+                      <span>{label}</span>
                     </Link>
                   </li>
                 );
@@ -85,31 +83,30 @@ export default function Sidebar() {
         )}
       </div>
 
-      {/* Desktop sidebar */}
-      <aside className="hidden lg:block lg:w-64 lg:shrink-0 lg:border-r lg:bg-white">
+      {/* Desktop content (no internal <aside>; parent provides it) */}
+      <div className="hidden lg:block">
         <div className="sticky top-0 h-[100dvh] overflow-y-auto px-4 py-6">
-          <div className="mb-6 px-1 text-sm font-semibold tracking-wide text-gray-800">
+          <div className="mb-6 px-1 text-sm font-semibold tracking-wide text-gray-800 dark:text-gray-200">
             Cosmere Character Generator
           </div>
           <nav aria-label="Sidebar Navigation">
             <ul className="space-y-1">
-              {NAV_ITEMS.map((item) => {
-                const active = isActive(item.href);
-                const Icon = item.icon;
+              {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+                const active = isActive(href);
                 return (
-                  <li key={item.href}>
+                  <li key={href}>
                     <Link
-                      href={item.href}
+                      href={href}
                       aria-current={active ? "page" : undefined}
                       className={[
-                        "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
+                        "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/60",
                         active
-                          ? "bg-gray-900 text-white"
-                          : "text-gray-700 hover:bg-gray-100",
+                          ? "bg-gray-900 text-white dark:bg-slate-100 dark:text-slate-900"
+                          : "text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-800",
                       ].join(" ")}
                     >
                       <Icon className="h-4 w-4" aria-hidden />
-                      <span>{item.label}</span>
+                      <span>{label}</span>
                     </Link>
                   </li>
                 );
@@ -117,7 +114,8 @@ export default function Sidebar() {
             </ul>
           </nav>
         </div>
-      </aside>
+      </div>
     </>
   );
 }
+

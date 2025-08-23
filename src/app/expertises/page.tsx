@@ -1,14 +1,12 @@
 // src/app/expertises/page.tsx
 "use client";
 
-//import { useMemo } from "react";
 import {
   useCharacterStore,
   type ArmorExpertise,
   type UtilityExpertise,
   type WeaponExpertise,
 } from "@/lib/store/character";
-//import Link from "next/link";
 
 import type {
   AnyExpertise,
@@ -41,8 +39,6 @@ const UTILITY: readonly UtilityExpertise[] = [
   "Literature","Military","Religion","Riding Horses","Stormwardens","Visual Arts","Weapon Crafting",
 ] as const;
 
-//const ALL: readonly AnyExpertise[] = [...CULTURAL, ...ARMOR, ...UTILITY, ...WEAPONS] as const;
-
 export default function ExpertisesPage() {
   const {
     stats,
@@ -54,133 +50,108 @@ export default function ExpertisesPage() {
   } = useCharacterStore();
 
   const intCap = stats.INT ?? 0;
-  //const culturalCount = culturalExpertises.length;
-  //const generalCount = generalExpertises.length;
 
-  //const isCulturalChecked = (e: CulturalExpertise) => culturalExpertises.includes(e);
-  const isGeneralChecked = (e: AnyExpertise) => generalExpertises.includes(e);
-
-  //const culturalFull = culturalCount >= 2;
-  //const generalFull = generalCount >= intCap;
-
-  // For “Additional Expertises”, we gray out items already chosen as Cultural
-  //const isBlockedByCultural = (e: AnyExpertise) => (culturalExpertises as readonly AnyExpertise[]).includes(e);
-
-  // Helpful booleans
-  //const needsMoreCultural = culturalCount < 2;
-  //const needsMoreGeneral = generalCount < intCap;
-
-  //const statusNote = useMemo(() => {
-  //  const parts: string[] = [];
-  //  if (needsMoreCultural) parts.push(`Choose ${2 - culturalCount} more Cultural`);
-  //  if (intCap > 0 && needsMoreGeneral) parts.push(`Choose ${intCap - generalCount} more Additional`);
-  //  if (intCap === 0) parts.push("No Additional expertises required (INT 0)");
-  //  return parts.join(" · ");
-  //}, [culturalCount, generalCount, intCap, needsMoreCultural, needsMoreGeneral]);
-  
   const totalAllowed = 2 + intCap;
   const totalSelected = culturalExpertises.length + generalExpertises.length;
   const needTwoCulturalFirst = culturalExpertises.length < 2;
 
   return (
     <div className="mx-auto max-w-4xl">
-      <h1 className="mb-2 text-2xl font-bold">Expertise</h1>
-<span>        <button
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Expertise</h1>
+        <button
           type="button"
           onClick={clearExpertises}
-          className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50"
+          className="rounded-lg border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-slate-800"
         >
           Clear selections
         </button>
-</span><div><br /></div>
+      </div>
+
       {/* Cultural (exactly 2) */}
-      <section className="mb-8">
-        <h2 className="mb-2 text-lg font-semibold">Cultural (choose 2)</h2>
+      <section className="mb-8 rounded-xl border border-gray-200 bg-white/80 p-4 dark:border-gray-700 dark:bg-slate-900/60">
+        <h2 className="mb-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
+          Cultural <span className="text-sm font-normal text-gray-600 dark:text-gray-400">(choose 2)</span>
+        </h2>
+
         <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
+          {CULTURAL.map((e) => {
+            const checked = culturalExpertises.includes(e);
+            // Only disable when we’ve hit the overall cap and this item isn’t already checked
+            const disabled = !checked && totalSelected >= totalAllowed;
 
-
-        {CULTURAL.map((e) => {
-  const checked = culturalExpertises.includes(e);
-  // Only disable when we’ve hit the overall cap and this item isn’t already checked
-  const disabled = !checked && totalSelected >= totalAllowed;
-
-  return (
-    <label
-      key={e}
-      className={[
-        "flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2",
-        disabled ? "opacity-50" : "hover:bg-gray-50",
-      ].join(" ")}
-    >
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={() => toggleCultural(e)}
-        disabled={disabled}
-        className="h-4 w-4"
-        aria-label={e}
-      />
-      <span>{e}</span>
-    </label>
-  );
-})}
-
-
+            return (
+              <label
+                key={e}
+                className={[
+                  "flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2",
+                  "border-gray-200 bg-white/80 dark:border-gray-700 dark:bg-slate-900/60",
+                  disabled && !checked ? "opacity-50" : "hover:bg-gray-50 dark:hover:bg-slate-800",
+                ].join(" ")}
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => toggleCultural(e)}
+                  disabled={disabled}
+                  className="h-4 w-4 accent-indigo-600 dark:accent-indigo-400"
+                  aria-label={e}
+                />
+                <span className="text-gray-800 dark:text-gray-200">{e}</span>
+              </label>
+            );
+          })}
         </div>
       </section>
 
       {/* Additional expertises (exactly INT) */}
-      <section className="mb-8">
-        <h2 className="mb-2 text-lg font-semibold">Additional Expertises (choose {intCap})</h2>
+      <section className="mb-8 rounded-xl border border-gray-200 bg-white/80 p-4 dark:border-gray-700 dark:bg-slate-900/60">
+        <h2 className="mb-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
+          Additional Expertises{" "}
+          <span className="text-sm font-normal text-gray-600 dark:text-gray-400">
+            (choose {intCap})
+          </span>
+        </h2>
+
         {/* Armor */}
-<Category
-  title="Armor"
-  items={ARMOR}
-  isChecked={isGeneralChecked}
-  isDisabled={(item) =>
-    // Block adding new ones until 2 Cultural are chosen,
-    // or when overall cap is reached; also prevent dupes with Cultural.
-    (!isGeneralChecked(item) &&
-      (needTwoCulturalFirst || totalSelected >= totalAllowed)) ||
-    //culturalExpertises.includes(item as any)
-    (isCultural(item) && culturalExpertises.includes(item))
+        <Category
+          title="Armor"
+          items={ARMOR}
+          isChecked={(e) => generalExpertises.includes(e)}
+          isDisabled={(item) =>
+            (!generalExpertises.includes(item) &&
+              (needTwoCulturalFirst || totalSelected >= totalAllowed)) ||
+            (isCultural(item) && culturalExpertises.includes(item))
+          }
+          onToggle={(e) => toggleGeneral(e)}
+        />
 
-  }
-  onToggle={(e) => toggleGeneral(e)}
-/>
+        {/* Utility */}
+        <Category
+          title="Utility"
+          items={UTILITY}
+          isChecked={(e) => generalExpertises.includes(e)}
+          isDisabled={(item) =>
+            (!generalExpertises.includes(item) &&
+              (needTwoCulturalFirst || totalSelected >= totalAllowed)) ||
+            (isCultural(item) && culturalExpertises.includes(item))
+          }
+          onToggle={(e) => toggleGeneral(e)}
+        />
 
-{/* Utility */}
-<Category
-  title="Utility"
-  items={UTILITY}
-  isChecked={isGeneralChecked}
-  isDisabled={(item) =>
-    (!isGeneralChecked(item) &&
-      (needTwoCulturalFirst || totalSelected >= totalAllowed)) ||
-    //culturalExpertises.includes(item as any)
-    (isCultural(item) && culturalExpertises.includes(item))
-
-  }
-  onToggle={(e) => toggleGeneral(e)}
-/>
-
-{/* Weapon */}
-<Category
-  title="Weapon"
-  items={WEAPONS}
-  isChecked={isGeneralChecked}
-  isDisabled={(item) =>
-    (!isGeneralChecked(item) &&
-      (needTwoCulturalFirst || totalSelected >= totalAllowed)) ||
-    //culturalExpertises.includes(item as any)
-    (isCultural(item) && culturalExpertises.includes(item))
-
-  }
-  onToggle={(e) => toggleGeneral(e)}
-/>
-
+        {/* Weapon */}
+        <Category
+          title="Weapon"
+          items={WEAPONS}
+          isChecked={(e) => generalExpertises.includes(e)}
+          isDisabled={(item) =>
+            (!generalExpertises.includes(item) &&
+              (needTwoCulturalFirst || totalSelected >= totalAllowed)) ||
+            (isCultural(item) && culturalExpertises.includes(item))
+          }
+          onToggle={(e) => toggleGeneral(e)}
+        />
       </section>
-
     </div>
   );
 }
@@ -194,9 +165,12 @@ function Category<T extends AnyExpertise>(props: {
   onToggle: (e: AnyExpertise) => void;
 }) {
   const { title, items, isChecked, isDisabled, onToggle } = props;
+
   return (
     <div className="mb-5">
-      <h3 className="mb-2 text-sm font-medium text-gray-800">{title}</h3>
+      <h3 className="mb-2 text-sm font-medium text-gray-800 dark:text-gray-200">
+        {title}
+      </h3>
       <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
         {items.map((e) => {
           const checked = isChecked(e);
@@ -206,7 +180,8 @@ function Category<T extends AnyExpertise>(props: {
               key={e as string}
               className={[
                 "flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2",
-                disabled && !checked ? "opacity-50" : "hover:bg-gray-50",
+                "border-gray-200 bg-white/80 dark:border-gray-700 dark:bg-slate-900/60",
+                disabled && !checked ? "opacity-50" : "hover:bg-gray-50 dark:hover:bg-slate-800",
               ].join(" ")}
               aria-disabled={disabled && !checked}
             >
@@ -215,10 +190,10 @@ function Category<T extends AnyExpertise>(props: {
                 checked={checked}
                 onChange={() => onToggle(e)}
                 disabled={disabled && !checked}
-                className="h-4 w-4"
+                className="h-4 w-4 accent-indigo-600 dark:accent-indigo-400"
                 aria-label={e as string}
               />
-              <span>{e as string}</span>
+              <span className="text-gray-800 dark:text-gray-200">{e as string}</span>
             </label>
           );
         })}
