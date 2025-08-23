@@ -6,6 +6,10 @@ const nextConfig: NextConfig = {
       { source: "/", destination: "/basics", permanent: true },
     ];
   },
+  output: 'export',
+  basePath: '/cosmere',
+  assetPrefix: '/cosmere',
+
 };
 
 export default nextConfig;
