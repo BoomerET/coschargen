@@ -119,11 +119,16 @@ export default function SkillsPage() {
             }
           };
 
+          // ✅ Outline the free Path skill in indigo (light & dark)
+          const cardClass = [
+            "rounded-xl border p-4 bg-white/80 dark:bg-slate-900/60",
+            isPathSkill
+              ? "border-indigo-500 ring-1 ring-indigo-400/40 dark:border-indigo-400 dark:ring-indigo-300/40"
+              : "border-gray-200 dark:border-gray-700",
+          ].join(" ");
+
           return (
-            <div
-              key={k}
-              className="rounded-xl border border-gray-200 bg-white/80 p-4 dark:border-gray-700 dark:bg-slate-900/60"
-            >
+            <div key={k} className={cardClass} aria-label={isPathSkill ? "Path free-rank skill" : undefined}>
               <div className="mb-2 flex items-center justify-between">
                 <div className="text-sm font-medium text-gray-800 dark:text-gray-200">
                   {k}
@@ -175,6 +180,11 @@ export default function SkillsPage() {
           );
         })}
       </div>
+
+      {/* Optional tiny legend (remove if you don't want it) */}
+      <p className="mt-3 text-xs text-gray-600 dark:text-gray-400">
+        Tip: the skill outlined in <span className="font-semibold text-indigo-600 dark:text-indigo-300">indigo</span> is your free Path skill.
+      </p>
     </div>
   );
 }
