@@ -7,9 +7,9 @@ const nextConfig: NextConfig = {
     ];
   },
   output: 'export',
-  basePath: '/cosmere',
-  assetPrefix: '/cosmere',
-
+  basePath: process.env.NODE_ENV === 'production' ? '/cosmere' : undefined,
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/cosmere/' : undefined,
+  images: { unoptimized: true },
 };
 
 export default nextConfig;

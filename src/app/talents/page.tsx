@@ -7,7 +7,6 @@ import { Sparkles, Wand2 } from "lucide-react";
 import {
   useCharacterStore,
   PATH_KEY_TALENT,
-  type Ancestry,
   type Path,
   type PathFocus,
   type PathKeyTalent,

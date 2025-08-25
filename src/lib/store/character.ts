@@ -309,7 +309,7 @@ export type CharacterState = {
 
 export const useCharacterStore = create<CharacterState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       // Basics
       name: "",
       ancestry: "",

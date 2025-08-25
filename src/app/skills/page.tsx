@@ -7,7 +7,6 @@ import {
   type SkillKey,
   SKILL_ATTR,
   PATH_GRANTED_SKILL,
-  getPathGrantedSkill,
 } from "@/lib/store/character";
 
 const SKILLS: SkillKey[] = [
@@ -30,10 +29,6 @@ const SKILLS: SkillKey[] = [
   "Survival",
   "Thievery",
 ];
-
-function clamp(n: number, lo: number, hi: number) {
-  return Math.max(lo, Math.min(hi, n));
-}
 
 export default function SkillsPage() {
   const {
