@@ -7,28 +7,30 @@ import {
   type SkillKey,
   SKILL_ATTR,
   PATH_GRANTED_SKILL,
+  type Path,
 } from "@/lib/store/character";
 
 const SKILLS: SkillKey[] = [
-  "Agility",
-  "Athletics",
-  "Crafting",
-  "Deception",
-  "Deduction",
-  "Discipline",
-  "Heavy Weaponry",
-  "Insight",
-  "Intimidation",
-  "Leadership",
-  "Light Weaponry",
-  "Lore",
-  "Medicine",
-  "Perception",
-  "Persuasion",
-  "Stealth",
-  "Survival",
-  "Thievery",
+  "Agility","Athletics","Crafting","Deception","Deduction","Discipline",
+  "Heavy Weaponry","Insight","Intimidation","Leadership","Light Weaponry",
+  "Lore","Medicine","Perception","Persuasion","Stealth","Survival","Thievery",
 ];
+
+// Recommended skills by Path
+const RECOMMENDED: Record<Exclude<Path, "">, readonly SkillKey[]> = {
+//  Agent: ["Agility","Deception","Deduction","Insight","Light Weaponry","Thievery"],
+//  Envoy: ["Deception","Leadership","Lore","Persuasion"],
+//  Hunter: ["Agility","Perception","Stealth","Survival","Light Weaponry","Heavy Weaponry"], // “either” => show both
+//  Leader: ["Athletics","Deception","Heavy Weaponry","Intimidation","Leadership","Persuasion"],
+//  Scholar: ["Crafting","Deduction","Lore","Medicine"],
+//  Warrior: ["Athletics","Light Weaponry","Heavy Weaponry","Intimidation","Leadership","Persuasion"],
+  Agent: ["Agility","Deception","Deduction","Light Weaponry","Thievery"],
+  Envoy: ["Deception","Leadership","Lore","Persuasion"],
+  Hunter: ["Agility","Stealth","Survival","Light Weaponry","Heavy Weaponry"], // “either” => show both
+  Leader: ["Athletics","Deception","Heavy Weaponry","Intimidation","Persuasion"],
+  Scholar: ["Crafting","Deduction","Medicine"],
+  Warrior: ["Light Weaponry","Heavy Weaponry","Intimidation","Leadership","Persuasion"],
+} as const;
 
 export default function SkillsPage() {
   const {
@@ -44,6 +46,12 @@ export default function SkillsPage() {
     () => (path ? PATH_GRANTED_SKILL[path] : null),
     [path]
   );
+
+  const recommendedSet = useMemo(() => {
+    if (!path) return new Set<SkillKey>();
+    const list = RECOMMENDED[path as Exclude<Path, "">] ?? [];
+    return new Set(list);
+  }, [path]);
 
   // Points spent using creation cost semantics
   const pointsSpent = useMemo(() => {
@@ -87,9 +95,10 @@ export default function SkillsPage() {
         {SKILLS.map((k) => {
           const base = skillRanks[k] ?? 0; // stored 0..2
           const isPathSkill = pathGranted === k;
+          const isRecommended = recommendedSet.has(k);
           const effective = Math.min(5, Math.max(base, isPathSkill ? 1 : 0)); // shown rank
 
-          const attrKey = SKILL_ATTR[k]; // e.g., "INT"
+          const attrKey = SKILL_ATTR[k];
           const attrVal = stats[attrKey] ?? 0;
           const checkValue = effective + attrVal;
 
@@ -119,16 +128,31 @@ export default function SkillsPage() {
             }
           };
 
-          // ✅ Outline the free Path skill in indigo (light & dark)
+          // Visual styling:
+          // - Path free skill: indigo border + ring
+          // - Recommended (not path): amber border + ring
+          // - If both: keep indigo border, add a small amber "Recommended" pill
           const cardClass = [
             "rounded-xl border p-4 bg-white/80 dark:bg-slate-900/60",
             isPathSkill
               ? "border-indigo-500 ring-1 ring-indigo-400/40 dark:border-indigo-400 dark:ring-indigo-300/40"
-              : "border-gray-200 dark:border-gray-700",
+              : isRecommended
+                ? "border-amber-500 ring-1 ring-amber-400/40 dark:border-amber-400 dark:ring-amber-300/40"
+                : "border-gray-200 dark:border-gray-700",
           ].join(" ");
 
           return (
-            <div key={k} className={cardClass} aria-label={isPathSkill ? "Path free-rank skill" : undefined}>
+            <div
+              key={k}
+              className={cardClass}
+              aria-label={
+                isPathSkill
+                  ? "Path free-rank skill"
+                  : isRecommended
+                  ? "Recommended skill for your Path"
+                  : undefined
+              }
+            >
               <div className="mb-2 flex items-center justify-between">
                 <div className="text-sm font-medium text-gray-800 dark:text-gray-200">
                   {k}
@@ -181,9 +205,9 @@ export default function SkillsPage() {
         })}
       </div>
 
-      {/* Optional tiny legend (remove if you don't want it) */}
       <p className="mt-3 text-xs text-gray-600 dark:text-gray-400">
-        Tip: the skill outlined in <span className="font-semibold text-indigo-600 dark:text-indigo-300">indigo</span> is your free Path skill.
+        Legend: <span className="font-semibold text-indigo-600 dark:text-indigo-300">Indigo</span> = free Path skill,&nbsp;
+        <span className="font-semibold text-amber-600 dark:text-amber-300">Amber</span> = recommended for your Path.
       </p>
     </div>
   );
