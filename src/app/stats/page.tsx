@@ -93,10 +93,10 @@ export default function StatsPage() {
     pre: stats?.PRE ?? 0,
   };
 
-  const movementFt = useMemo(() => calcMovementRate(spd), [spd]);
+  //const movementFt = useMemo(() => calcMovementRate(spd), [spd]);
   const recoveryDie = useMemo(() => calcRecoveryDie(wil), [wil]);
-  const dieSides = parseInt((recoveryDie || "").replace(/^\d*d/, ""), 10) || 0;
-  const sensesRange = useMemo(() => calcSensesRange(awa), [awa]);
+  //const dieSides = parseInt((recoveryDie || "").replace(/^\d*d/, ""), 10) || 0;
+  //const sensesRange = useMemo(() => calcSensesRange(awa), [awa]);
 
   const { lifting, carrying } = useMemo(
     () => ({ lifting: calcLiftingCapacity(str), carrying: calcCarryingCapacity(str) }),
