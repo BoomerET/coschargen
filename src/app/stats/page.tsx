@@ -1,8 +1,8 @@
-// app/stats/page.tsx
+// src/app/stats/page.tsx
 "use client";
 
 import { useMemo } from "react";
-import { useCharacterStore, type StatKey } from "@/lib/store/character";
+import { useCharacterStore, type StatKey, type Path } from "@/lib/store/character";
 import { Eye, Shield, Brain, Sparkles } from "lucide-react";
 import DieIcon from "@/app/components/DieIcon";
 
@@ -15,6 +15,16 @@ const ATTRS: { key: StatKey; label: string }[] = [
   { key: "PRE", label: "Presence (PRE)" },
 ];
 
+// Which attributes to highlight for each Path
+const HIGHLIGHTS: Record<Exclude<Path, "">, readonly StatKey[]> = {
+  Agent: ["AWA", "INT", "SPD"],
+  Envoy: ["PRE", "WIL"],
+  Hunter: ["AWA", "STR", "SPD"],
+  Leader: ["PRE", "STR", "WIL"],
+  Scholar: ["INT", "PRE"],
+  Warrior: ["SPD", "STR"],
+} as const;
+
 function calcLiftingCapacity(str: number): number {
   const s = Math.max(0, Math.floor(str));
   if (s === 0) return 100;
@@ -24,7 +34,6 @@ function calcLiftingCapacity(str: number): number {
   if (s <= 8) return 5_000;
   return 10_000;
 }
-
 function calcCarryingCapacity(str: number): number {
   const s = Math.max(0, Math.floor(str));
   if (s === 0) return 50;
@@ -34,7 +43,6 @@ function calcCarryingCapacity(str: number): number {
   if (s <= 8) return 2_500;
   return 5_000;
 }
-
 function calcMovementRate(spd: number): number {
   const s = Math.max(0, Math.floor(spd));
   if (s === 0) return 20;
@@ -44,10 +52,7 @@ function calcMovementRate(spd: number): number {
   if (s <= 8) return 60;
   return 80;
 }
-
-function calcRecoveryDie(
-  wil: number
-): "1d4" | "1d6" | "1d8" | "1d10" | "1d12" | "1d0" {
+function calcRecoveryDie(wil: number): "1d4" | "1d6" | "1d8" | "1d10" | "1d12" | "1d0" {
   const w = Math.max(0, Math.floor(wil));
   if (w === 0) return "1d4";
   if (w <= 2) return "1d6";
@@ -56,7 +61,6 @@ function calcRecoveryDie(
   if (w <= 8) return "1d12";
   return "1d0";
 }
-
 function calcSensesRange(awa: number): string {
   const a = Math.max(0, Math.floor(awa));
   if (a === 0) return "5 ft";
@@ -68,7 +72,7 @@ function calcSensesRange(awa: number): string {
 }
 
 export default function StatsPage() {
-  const { stats, totalStatPoints, setStat, resetStats } = useCharacterStore();
+  const { stats, totalStatPoints, setStat, resetStats, path } = useCharacterStore();
 
   const used = Object.values(stats).reduce((s, v) => s + v, 0);
   const remaining = totalStatPoints - used;
@@ -95,10 +99,7 @@ export default function StatsPage() {
   const sensesRange = useMemo(() => calcSensesRange(awa), [awa]);
 
   const { lifting, carrying } = useMemo(
-    () => ({
-      lifting: calcLiftingCapacity(str),
-      carrying: calcCarryingCapacity(str),
-    }),
+    () => ({ lifting: calcLiftingCapacity(str), carrying: calcCarryingCapacity(str) }),
     [str]
   );
 
@@ -110,6 +111,8 @@ export default function StatsPage() {
     }),
     [str, spd, int, wil, awa, pre]
   );
+
+  const highlightedKeys = (path ? HIGHLIGHTS[path as Exclude<Path, "">] : []) as readonly StatKey[];
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -142,15 +145,19 @@ export default function StatsPage() {
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         {ATTRS.map(({ key, label }) => {
           const value = stats[key];
+          const isHighlighted = highlightedKeys.includes(key);
+
+          const cardClass = [
+            "rounded-xl border p-4 bg-white/80 dark:bg-slate-900/60",
+            isHighlighted
+              ? "border-amber-500 ring-1 ring-amber-400/40 dark:border-amber-400 dark:ring-amber-300/40"
+              : "border-gray-200 dark:border-gray-700",
+          ].join(" ");
+
           return (
-            <div
-              key={key}
-              className="rounded-xl border border-gray-200 bg-white/80 p-4 dark:border-gray-700 dark:bg-slate-900/60"
-            >
+            <div key={key} className={cardClass}>
               <div className="mb-3">
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  {label}
-                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">{label}</div>
               </div>
 
               <div className="flex items-center gap-2">
@@ -181,21 +188,13 @@ export default function StatsPage() {
         <br />
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="rounded-xl border border-gray-200 bg-white/80 p-4 dark:border-gray-700 dark:bg-slate-900/60">
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              Lifting Capacity
-            </div>
-            <div className="mt-1 text-2xl font-semibold">
-              {lifting.toLocaleString()} lbs
-            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Lifting Capacity</div>
+            <div className="mt-1 text-2xl font-semibold">{lifting.toLocaleString()} lbs</div>
           </div>
 
           <div className="rounded-xl border border-gray-200 bg-white/80 p-4 dark:border-gray-700 dark:bg-slate-900/60">
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              Carrying Capacity
-            </div>
-            <div className="mt-1 text-2xl font-semibold">
-              {carrying.toLocaleString()} lbs
-            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Carrying Capacity</div>
+            <div className="mt-1 text-2xl font-semibold">{carrying.toLocaleString()} lbs</div>
           </div>
         </div>
       </section>
@@ -204,34 +203,22 @@ export default function StatsPage() {
         <div className="grid gap-4 sm:grid-cols-2">
           {/* Movement Rate (SPD) */}
           <div className="rounded-xl border border-gray-200 bg-white/80 p-4 dark:border-gray-700 dark:bg-slate-900/60">
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              Movement Rate
-            </div>
-            <div className="mt-1 text-2xl font-semibold">
-              {movementFt}ft/action
-            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Movement Rate</div>
+            <div className="mt-1 text-2xl font-semibold">{calcMovementRate(spd)}ft/action</div>
           </div>
 
           {/* Recovery Die (WIL) */}
           <div className="rounded-xl border border-gray-200 bg-white/80 p-4 dark:border-gray-700 dark:bg-slate-900/60">
             <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Recovery Die
-              </div>
-              <DieIcon
-                sides={dieSides}
-                className="h-5 w-5 text-gray-500 dark:text-gray-400"
-              />
+              <div className="text-sm text-gray-600 dark:text-gray-400">Recovery Die</div>
+              <DieIcon sides={parseInt((recoveryDie || "").replace(/^\d*d/, ""), 10) || 0} className="h-5 w-5 text-gray-500 dark:text-gray-400" />
             </div>
             <div className="mt-1 inline-flex items-center gap-2">
               <span className="text-2xl font-semibold">{recoveryDie}</span>
             </div>
-
             {recoveryDie === "1d0" && (
               <p className="mt-2 text-xs italic text-gray-500 dark:text-gray-400">
-                Note: a d0 always rolls 0. If this is intentional, you&rsquo;re
-                all set; if you meant a higher die (e.g., d20), let me know and
-                I’ll update the ladder.
+                Note: a d0 always rolls 0. If this is intentional, you’re all set.
               </p>
             )}
           </div>
@@ -241,12 +228,10 @@ export default function StatsPage() {
       <section className="mt-8">
         <div className="rounded-xl border border-gray-200 bg-white/80 p-4 dark:border-gray-700 dark:bg-slate-900/60">
           <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              Senses Range
-            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Senses Range</div>
             <Eye className="h-5 w-5 text-gray-500 dark:text-gray-400" aria-hidden />
           </div>
-          <div className="mt-1 text-2xl font-semibold">{sensesRange}</div>
+          <div className="mt-1 text-2xl font-semibold">{calcSensesRange(awa)}</div>
         </div>
       </section>
 
@@ -255,40 +240,28 @@ export default function StatsPage() {
           {/* Physical Defense */}
           <div className="rounded-xl border border-gray-200 bg-white/80 p-4 dark:border-gray-700 dark:bg-slate-900/60">
             <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Physical Defense
-              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Physical Defense</div>
               <Shield className="h-5 w-5 text-gray-500 dark:text-gray-400" aria-hidden />
             </div>
-            <div className="mt-1 text-2xl font-semibold">
-              {defenses.physical}
-            </div>
+            <div className="mt-1 text-2xl font-semibold">{defenses.physical}</div>
           </div>
 
           {/* Cognitive Defense */}
           <div className="rounded-xl border border-gray-200 bg-white/80 p-4 dark:border-gray-700 dark:bg-slate-900/60">
             <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Cognitive Defense
-              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Cognitive Defense</div>
               <Brain className="h-5 w-5 text-gray-500 dark:text-gray-400" aria-hidden />
             </div>
-            <div className="mt-1 text-2xl font-semibold">
-              {defenses.cognitive}
-            </div>
+            <div className="mt-1 text-2xl font-semibold">{defenses.cognitive}</div>
           </div>
 
           {/* Spiritual Defense */}
           <div className="rounded-xl border border-gray-200 bg-white/80 p-4 dark:border-gray-700 dark:bg-slate-900/60">
             <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Spiritual Defense
-              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Spiritual Defense</div>
               <Sparkles className="h-5 w-5 text-gray-500 dark:text-gray-400" aria-hidden />
             </div>
-            <div className="mt-1 text-2xl font-semibold">
-              {defenses.spiritual}
-            </div>
+            <div className="mt-1 text-2xl font-semibold">{defenses.spiritual}</div>
           </div>
         </div>
       </section>
